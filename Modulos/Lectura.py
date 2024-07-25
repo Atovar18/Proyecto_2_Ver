@@ -2,7 +2,7 @@ import pandas as pd
 import math
 
 
-# =================================================== Comenzamos la lectura de los datos =================================================================
+# ============================================================================== Comenzamos la lectura de los datos ==========================================================================================
 # Ruta al archivo Excel
 ruta_archivo = 'Datos/Data_io.xlsx'
 
@@ -164,12 +164,44 @@ def SHUNT_ELEMENTS ():
     Elementos_a_tierra = Elementos_a_tierra.reset_index(drop=True)
 
     # Extraemos los valores importantes de las listas Elementos_a_tierra.
-    ID_Elementos_a_tierra = Elementos_a_tierra.iloc[:, 1]
-    Bus_i_Elementos_a_tierra = Elementos_a_tierra.iloc[:, 2]
+    ID_SHUNT = Elementos_a_tierra.iloc[:, 1]
+    Bus_i_SHUNT = Elementos_a_tierra.iloc[:, 2]
     R_Shunt = Elementos_a_tierra.iloc[:, 3]
     X_Shunt = Elementos_a_tierra.iloc[:, 4]
     
-    return ID_Elementos_a_tierra, Bus_i_Elementos_a_tierra, R_Shunt, X_Shunt
+    return ID_SHUNT, Bus_i_SHUNT, R_Shunt, X_Shunt
+
+# ==================================================================================== Comprobación de las Barras =========================================================================================================================================
+
+def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus_i_shunt):
+    
+    # Buscamos los valores totales de las barras.
+    Max_Barra = max (Barra_i)
+    
+    # Buscamos los valores totales de los elementos interconectados.
+    Bus_i_lineas_p = max (Bus_i_lineas)
+    Bus_j_lineas_p = max (Bus_j_lineas)
+    Bus_i_trx_p = max (Bus_i_trx)
+    Bus_j_trx_p = max (Bus_j_trx)
+    Bus_i_shunt_p = max (Bus_i_shunt)
+    
+    # Tomamos los valores maximos de los elementos interconectados.
+    Interconectados = max (Bus_i_lineas_p, Bus_j_lineas_p, Bus_i_trx_p, Bus_j_trx_p, Bus_i_shunt_p)
+    
+    # Realizamos la comparación entre los valores.
+    if Max_Barra == Interconectados:
+        print ()
+        print ('Las conexiones coinciden.')
+    
+    else:
+        print ()
+        print ('Las conexiones no coinciden.')
+        print ('Barras:',Max_Barra)
+        print ('Elementos conectados:',Interconectados)
+        exit ()  
+    
+    return
+
 
 
 
