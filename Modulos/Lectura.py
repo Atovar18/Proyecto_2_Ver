@@ -178,18 +178,22 @@ def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus
     # Buscamos los valores totales de las barras.
     Max_Barra = max (Barra_i)
     
-    # Buscamos los valores totales de los elementos interconectados.
-    Bus_i_lineas_p = max (Bus_i_lineas)
-    Bus_j_lineas_p = max (Bus_j_lineas)
-    Bus_i_trx_p = max (Bus_i_trx)
-    Bus_j_trx_p = max (Bus_j_trx)
-    Bus_i_shunt_p = max (Bus_i_shunt)
+    # Definimos una lista con todos los valores de las conexiones.
+    Valores_maximos = []
+    Valores_maximos.append(list(Bus_i_trx))
+    Valores_maximos.append(list(Bus_j_trx))
+    Valores_maximos.append(list(Bus_i_lineas))
+    Valores_maximos.append(list(Bus_j_lineas))
+    Valores_maximos.append(list(Bus_i_shunt))   
     
-    # Tomamos los valores maximos de los elementos interconectados.
-    Interconectados = max (Bus_i_lineas_p, Bus_j_lineas_p, Bus_i_trx_p, Bus_j_trx_p, Bus_i_shunt_p)
+    # Aplanar la lista de listas en una sola lista
+    Valores_aplanados = [item for sublist in Valores_maximos for item in sublist]
+
+    # Encontrar el valor máximo
+    Valor_maximo = max(Valores_aplanados)
     
     # Realizamos la comparación entre los valores.
-    if Max_Barra == Interconectados:
+    if Max_Barra == Valor_maximo:
         print ()
         print ('Las conexiones coinciden.')
     
@@ -197,7 +201,7 @@ def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus
         print ()
         print ('Las conexiones no coinciden.')
         print ('Barras:',Max_Barra)
-        print ('Elementos conectados:',Interconectados)
+        print ('Elementos conectados:',Valor_maximo)
         exit ()  
     
     return
