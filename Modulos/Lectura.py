@@ -65,6 +65,8 @@ def BUS ():
 
     # Copia de las variables originiales para no afectar los valores originales.   
     Modulo_V = V_pu.copy()
+    P_demanda = P_load.copy()
+    Q_demanda = Q_load.copy()
 
     # Bucle para V_pu: Si el valor es None, reemplaza con 1.
     for k in range(len(V_pu)):
@@ -78,55 +80,99 @@ def BUS ():
     for i , k in enumerate (P_load):
         
         # Calculamos la potencia activa del modelo Zip.
-        P = P_load[i]*(Z_zip[i]*(Modulo_V[i]**2) + I_zip[i]*(Modulo_V [i])+ P_zip[i])
+        P = P_demanda[i]*(Z_zip[i]*(Modulo_V[i]**2) + I_zip[i]*(Modulo_V [i])+ P_zip[i])
         
         # Calculamos la potencia reactiva del modelo Zip.
-        Q = Q_load[i]*(Z_zip[i]*(Modulo_V[i]**2) + I_zip[i]*(Modulo_V [i])+ P_zip[i])
+        Q = Q_demanda[i]*(Z_zip[i]*(Modulo_V[i]**2) + I_zip[i]*(Modulo_V [i])+ P_zip[i])
         
         # Si P o Q son 0, no se hace nada, pero si son diferentes de 0, realizamos las correspondiente sustitución.
         if P == 0: 
-            P_load [i] = P_load[i]
+            P_demanda [i] = P_demanda[i]
         
         else:
-            P_load [i] = P
+            P_demanda [i] = P
             
         if Q == 0:
-            Q_load [i] = Q_load[i]
+            Q_demanda [i] = Q_demanda[i]
         
         else:
-            Q_load [i] = Q
+            Q_demanda [i] = Q
             
         # Ahora podemos retornar los valores calculados y extraidos de los datos.
         
-    return ID_Barras, Barra_i, Bus_type, Modulo_V, Angulos_grados, P_gen, Q_gen, P_load, Q_load, Z_zip, I_zip, P_zip
+    return ID_Barras, Barra_i, Bus_type, Modulo_V, Angulos_grados, P_gen, Q_gen, P_demanda, Q_demanda, Z_zip, I_zip, P_zip
+
+def LINES ():
+
+    # Seleccionamos la hoja de calculo LINES.
+    Lineas = archivo_excel.parse('LINES')
+
+    # Eliminamos las Lineas que esten apagadas, para simplificar la cuentas.
+    Lineas = Lineas[Lineas.iloc[:, 0] != 'OFF']
+
+    # Ordenamos la columna Bus i, por si hace falta.
+    Lineas = Lineas.sort_values(by='Bus i')
+
+    # Redefinimos los indices para efectos de calculos.
+    Lineas = Lineas.reset_index(drop=True)
+
+    # Extraemos los valores importantes de las listas Lineas.
+    ID_lineas = Lineas.iloc[:, 1]
+    Bus_i_lineas = Lineas.iloc[:, 2]
+    Bus_j_lineas = Lineas.iloc[:, 3]
+    R_lineas = Lineas.iloc[:, 4]
+    X_lineas = Lineas.iloc[:, 5]
+    B_lineas = Lineas.iloc[:, 6]
+    
+    return ID_lineas, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas
+    
+def TRX ():
+
+    # Seleccionamos la hoja TRX para extraer los datos de los Transformadores.
+    Transformadores = archivo_excel.parse('TRX')
+
+    # Eliminamos los Transformadores que esten apagadas, para simplificar la cuentas.
+    Transformadores = Transformadores[Transformadores.iloc[:, 0] != 'OFF']
+
+    # Ordenamos la columna Bus i, por si hace falta.
+    Transformadores = Transformadores.sort_values(by='Bus i')
+
+    # Redefinimos los indices para efectos de calculos.
+    Transformadores = Transformadores.reset_index(drop=True)
+
+    # Extraemos los valores importantes de las listas Transformadores.
+    ID_trx = Transformadores.iloc[:, 1]
+    Bus_i_trx = Transformadores.iloc[:, 2]
+    Bus_j_trx = Transformadores.iloc[:, 3]
+    Xcc_trx = Transformadores.iloc[:, 4]
+    Tap_trx = Transformadores.iloc[:, 5]
+    
+    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx
+
+def SHUNT_ELEMENTS ():
+
+    # Seleccionamos la hoja de SHUNT ELEMENTS.
+    Elementos_a_tierra = archivo_excel.parse('SHUNT_ELEMENTS')
+
+    # Eliminamos los Elementos_a_tierra que esten apagadas, para simplificar la cuentas.
+    Elementos_a_tierra = Elementos_a_tierra[Elementos_a_tierra.iloc[:, 0] != 'OFF']
+
+    # Ordenamos la columna Bus i, por si hace falta.
+    Elementos_a_tierra = Elementos_a_tierra.sort_values(by='Bus i')
+
+    # Redefinimos los indices para efectos de calculos.
+    Elementos_a_tierra = Elementos_a_tierra.reset_index(drop=True)
+
+    # Extraemos los valores importantes de las listas Elementos_a_tierra.
+    ID_Elementos_a_tierra = Elementos_a_tierra.iloc[:, 1]
+    Bus_i_Elementos_a_tierra = Elementos_a_tierra.iloc[:, 2]
+    R_Shunt = Elementos_a_tierra.iloc[:, 3]
+    X_Shunt = Elementos_a_tierra.iloc[:, 4]
+    
+    return ID_Elementos_a_tierra, Bus_i_Elementos_a_tierra, R_Shunt, X_Shunt
 
 
-            
-  
-print ()
-print (archivo_excel.sheet_names)
-print ()
-
-# Seleccionamos la hoja de calculo LINES.
-Lineas = archivo_excel.parse('LINES')
-
-# Eliminamos las Lineas que esten apagadas, para simplificar la cuentas.
-Lineas = Lineas[Lineas.iloc[:, 0] != 'OFF']
-
-# Ordenamos la columna Bus i, por si hace falta.
-Lineas = Lineas.sort_values(by='Bus i')
-
-# Redefinimos los indices para efectos de calculos.
-Lineas = Lineas.reset_index(drop=True)
 
 
-print ()
-print (Lineas)          
-print ()
-print ()
-print ()
-print ()
-print ()
-print ()
 
 
