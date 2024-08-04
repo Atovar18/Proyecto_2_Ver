@@ -146,8 +146,9 @@ def TRX ():
     Bus_j_trx = Transformadores.iloc[:, 3]
     Xcc_trx = Transformadores.iloc[:, 4]
     Tap_trx = Transformadores.iloc[:, 5]
+    Barra_tap = Transformadores.iloc[:, 6]
     
-    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx
+    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Barra_tap
 
 def SHUNT_ELEMENTS ():
 
@@ -196,6 +197,7 @@ def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus
     if Max_Barra == Valor_maximo:
         print ()
         print ('Las conexiones coinciden.')
+        print ()
     
     else:
         print ()
