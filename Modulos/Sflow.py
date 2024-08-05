@@ -97,8 +97,8 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas,
         # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
         
         # Calculamos los terminos.
-        Termino1 = (abs (Fasores_GS [j]) ** 2)*np.conjugate(SeriesTRX [posicion])
-        Termino2 = np.conjugate (Tap_trx[posicion])*(Fasores_GS [j])*(np.conjugate(Fasores_GS [i]))*np.conjugate(SeriesTRX [posicion])
+        Termino1 = (Tap_trx[posicion]**2)*(abs (Fasores_GS [j]) ** 2)*np.conjugate(SeriesTRX [posicion])
+        Termino2 = Tap_trx[posicion]*(Fasores_GS [j])*(np.conjugate(Fasores_GS [i]))*np.conjugate(SeriesTRX [posicion])
         
         # Flujo j -> i.
         ji = Termino1 - Termino2

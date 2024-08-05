@@ -43,8 +43,8 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     # ============================================================================ SECCION TRX ==========================================================================================================
 
     # Comenzamos directos con las admitanicas.
-    Y_trx = np.reciprocal (Xcc_trx)
-    Y_trx = Y_trx*1j
+    Y_trx = np.reciprocal (Xcc_trx*1j)
+    Y_trx = Y_trx
     
     # Definimos listas a TRX.
     SeriesTRX = []
@@ -99,30 +99,46 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     B_lineas.extend(TRX_J)
     B_lineas.extend(Y_shunt)
     
-    # Paso 1: Combinar las listas
-    combined_list = list(zip(Bus_i_lineas, B_lineas))
+    B2_lineas = np.array(B_lineas)
+    B2_lineas = B2_lineas[B2_lineas != 0]
+    
+    if B2_lineas.size == 0:
+        Conex = int(0)
+        lineas = int(0)
+        
+    else: 
+        # Paso 1: Combinar las listas
+        combined_list = list(zip(Bus_i_lineas, B_lineas))
 
-    # Paso 2: Ordenar las listas combinadas según los elementos de Bus_i_lineas
-    combined_list.sort(key=lambda x: x[0])
+        # Paso 2: Ordenar las listas combinadas según los elementos de Bus_i_lineas
+        combined_list.sort(key=lambda x: x[0])
 
-    # Paso 3: Eliminar las posiciones donde los elementos de B_lineas sean 0
-    combined_list = [pair for pair in combined_list if pair[1] != 0]
+        # Paso 3: Eliminar las posiciones donde los elementos de B_lineas sean 0
+        combined_list = [pair for pair in combined_list if pair[1] != 0]
 
-    # Paso 4: Eliminar las posiciones donde los elementos de Bus_i_lineas sean repetidos
-    seen = set()
-    unique_combined_list = []
-    for pair in combined_list:
-        if pair[0] not in seen:
-            unique_combined_list.append(pair)
-            seen.add(pair[0])
+        # Paso 4: Eliminar las posiciones donde los elementos de Bus_i_lineas sean repetidos
+        seen = set()
+        unique_combined_list = []
+        for pair in combined_list:
+            if pair[0] not in seen:
+                unique_combined_list.append(pair)
+                seen.add(pair[0])
 
-    # Separar las listas combinadas de nuevo en Bus_i_lineas y B_lineas
-    lineas, Conex = zip(*unique_combined_list)
+
+        # Separar las listas combinadas de nuevo en Bus_i_lineas y B_lineas
+        lineas, Conex = zip(*unique_combined_list)
+    
     
     # Escogemos el numero total de conexiones a tierra.
-    Conexiones_a_Tierra = len(Conex) 
-    Tomas_a_tierra = Conexiones_a_Tierra
-    elementos_a_tierra = lineas
+    if Conex == 0:
+        Conexiones_a_Tierra = 0
+        Tomas_a_tierra = Conexiones_a_Tierra
+        elementos_a_tierra = 0
+        
+    else:
+        Conexiones_a_Tierra = len(Conex) 
+        Tomas_a_tierra = Conexiones_a_Tierra
+        elementos_a_tierra = lineas
             
     # Calculamos las admitancias de las lineas.
     Y_linea = np.reciprocal (Z_lineas)
@@ -218,7 +234,11 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
             MatrizA[idx, Barra_j - 1] = (-1)
 
     # Manejo de conexiones a tierra (si es necesario)
-    elementos_a_tierra_arr = np.array(list(elementos_a_tierra))
+    
+    if elementos_a_tierra == 0: 
+        elementos_a_tierra_arr = []
+    else:
+        elementos_a_tierra_arr = np.array(list(elementos_a_tierra))
 
     # Agrega el valor 1 en la matriz según los elementos únicos
     for elemento in elementos_a_tierra_arr:
@@ -245,13 +265,14 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
     TRX_PI = TRX_I
     TRX_JI = TRX_J
     L_Shunt = B_lineas
+    Elementos_a_tierra_arr = np.array(elementos_a_tierra_arr)
 
     # Eliminamos los TRX que no tengan conexiones a tierra.
     Bus_i_TRX = [elemento for elemento, tap in zip(Bus_i_trx, Tap_trx) if tap != 1] 
     Bus_j_TRX = [elemento for elemento, tap in zip(Bus_j_trx, Tap_trx) if tap != 1] 
 
     # Creamos las listas de las conexiones a tierra, primero verificamos si misma esta vacia.
-    if elementos_a_tierra_arr.size == 0:
+    if Elementos_a_tierra_arr.size == 0:
         Conex_totales = Lineas
         Conex_tierra = []
         pass
@@ -285,6 +306,7 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
         bus_i = int(bus_i)
         # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
         Conex_Tierra_1[bus_i-1] += TRX_I[i]
+        
 
     # Iterar sobre Bus_j_TRX y TRX_j simultáneamente
     for i, bus_i in enumerate(Bus_j_p):
@@ -303,11 +325,11 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
 
     # ========================================= Cargas a tierra de Lineas =======================================================================================================
     
-    if elementos_a_tierra_arr.size == 0:
+    if Elementos_a_tierra_arr.size == 0:
         pass
     
     else :                
-        Y_Bshunt_l = [x / 2 for x in L_Shunt]
+        Y_Bshunt_l = [x / 2 for x in L_Shunt*1j]
 
         # Iterar sobre Barra_i_lineas y Y_Bshunt_l agregamos los efectos capacitivos de las líneas en la barra i.
         for i, bus_i in enumerate(Bus_i_lineas):
@@ -323,7 +345,7 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
         
     # =============================================== Conexiones a tierra totales ======================================================================================================================================================
     
-    if elementos_a_tierra_arr.size == 0:
+    if Elementos_a_tierra_arr.size == 0:
         Conex_totales = Lineas
         Conex_Tierra = int (0)
         pass

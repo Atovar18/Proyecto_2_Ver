@@ -1,11 +1,13 @@
 from Modulos import Lectura
+from Modulos import Y_bus
+from Modulos import Gauus
+from Modulos import Sflow
+from Modulos import Potencia
 import numpy as np
 import pandas as pd
 import itertools
-from Modulos import Y_bus
 import time 
-from Modulos import Gauus
-from Modulos import Sflow
+
 
 # ============================================================================= Inicio de la rutina. =======================================================================================================================================================================================================================================
 #Comienzo = time.time()
@@ -45,9 +47,8 @@ if GS == 'Y':
     # Calculamos los flujos.
     Salida_i_GS, Salida_j_GS, ID_GS, P_loss_GS, Q_loss_GS, Pij_GS, Qij_GS, Pji_GS, Qji_GS = Sflow.Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas, Bus_i_TRX_n, Bus_j_TRX_n, ID_trx, Xcc_trx, Tap_trx, Barra_tap, Fasores_GS, Conex_lineas, SeriesTRX, Bus_i_TRX_n, Bus_j_TRX_n)
     
-    
-    
-
+    # Calculamos las potencias de los generadores.   
+    P_genGS, Q_genGS = Potencia.Potencia_entregada (Bus_type, Fasores_GS, Y_Bus)
 
 
 # ============================================================================= Fin de la rutina. ==========================================================================================================================================================================================================================================
