@@ -1,0 +1,174 @@
+import numpy as np
+
+
+def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas, Bus_i_TRX, Bus_j_TRX, ID_trx, Xcc_trx, Tap_trx, Barra_tap, Fasores_GS, Conex_lineas, SeriesTRX, Bus_i_TRX_n, Bus_j_TRX_n):
+
+    Potencia_Sij = np.array([]); Potencia_Sji = np.array([]); Potencia_Sij2 = np.array([]); Potencia_Sji2 = np.array([])
+
+    Indice_Line = list (zip (Bus_i_lineas, Bus_j_lineas))
+    Indice_TRX = list (zip (Bus_i_TRX_n, Bus_j_TRX_n))
+
+    Bus_i_linea = list (Bus_i_lineas)
+    Bus_j_linea = list (Bus_j_lineas)
+    Bus_i_TRX = list (Bus_i_TRX_n)
+    Bus_j_TRX = list (Bus_j_TRX_n)
+    ID_linea = list (ID_lineas)
+    ID_trxS = list (ID_trx)
+
+
+    for posicion, nexos in enumerate (Indice_Line):
+        
+        i = nexos [0] - 1
+        j = nexos [1] - 1
+
+        if posicion <= len (B_lineas)-1:
+            X_linea_tierra = B_lineas [posicion] / 2
+            
+            if X_linea_tierra == 0:
+                Y_linea_tierra = 0
+                
+            else: 
+                Y_linea_tierra = X_linea_tierra
+        else: 
+            Y_linea_tierra = 0 
+        
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        #                                                                              Flujo de potencia i -> j.
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        
+        # Calculamos los terminos.
+        Termino_tierra = (abs (Fasores_GS [i]) ** 2) * np.conjugate(Y_linea_tierra)
+        Termino_conex_linea = Fasores_GS [i]*(np.conjugate((Fasores_GS[i] - Fasores_GS[j]) * Conex_lineas [i]))
+
+        # Flujo i -> j.
+        ij = Termino_tierra + Termino_conex_linea
+        
+        # Aproximamos los resultados.
+        ij = np.round (ij, 4)
+        
+        # Guardamos los valores.
+        Potencia_Sij = np.append (Potencia_Sij, ij)
+        
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        #                                                                              Flujo de potencia j -> i.
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        
+        # Calculamos los terminos.
+        Termino_tierra_2 = (abs (Fasores_GS [j]) ** 2) * np.conjugate(Y_linea_tierra)
+        Termino_conex_linea_2 = Fasores_GS [j]*(np.conjugate((Fasores_GS[j] - Fasores_GS[i]) * Conex_lineas [i]))
+
+        # Flujo j -> i.
+        ji = Termino_tierra_2 + Termino_conex_linea_2
+        
+        # Aproximamos los resultados.
+        ji = np.round (ji, 4)
+        
+        # Guardamos los valores.
+        Potencia_Sji = np.append (Potencia_Sji, ji)
+        
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #                                                                               Sección de transformadores.
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    for posicion, nexos in enumerate (Indice_TRX):
+        
+        i = nexos [0] - 1
+        j = nexos [1] - 1
+        
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        #                                                                              Flujo de potencia i -> j.
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        
+        # Calculamos los terminos.
+        Termino1 = (abs (Fasores_GS [i]) ** 2)*np.conjugate(SeriesTRX [posicion])
+        Termino2 = np.conjugate (Tap_trx[posicion])*(Fasores_GS [i])*(np.conjugate(Fasores_GS [j]))*np.conjugate(SeriesTRX [posicion])
+        
+        # Flujo i -> j.
+        ij = Termino1 - Termino2
+        
+        # Aproximamos los resultados.
+        ij = np.round (ij, 4)
+        
+        # Guardamos los valores.
+        Potencia_Sij2 = np.append (Potencia_Sij2, ij)
+        
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        #                                                                              Flujo de potencia j -> i.
+        # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+        
+        # Calculamos los terminos.
+        Termino1 = (abs (Fasores_GS [j]) ** 2)*np.conjugate(SeriesTRX [posicion])
+        Termino2 = np.conjugate (Tap_trx[posicion])*(Fasores_GS [j])*(np.conjugate(Fasores_GS [i]))*np.conjugate(SeriesTRX [posicion])
+        
+        # Flujo j -> i.
+        ji = Termino1 - Termino2
+        
+        # Aproximamos los resultados.
+        ji = np.round (ji, 4)
+        
+        # Guardamos los valores.
+        Potencia_Sji2 = np.append (Potencia_Sji2, ji)
+        
+    # Separación de los valores de las potencias.
+
+    # i -> j.
+    Pij_linea = np.real(Potencia_Sij)
+    Qij_linea = np.imag(Potencia_Sij)
+    Pij_trx = np.real(Potencia_Sij2)
+    Qij_trx = np.imag(Potencia_Sij2)
+
+    # j -> i.
+    Pji_linea = np.real(Potencia_Sji)
+    Qji_linea = np.imag(Potencia_Sji)
+    Pji_trx = np.real(Potencia_Sji2)
+    Qji_trx = np.imag(Potencia_Sji2)
+
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #                                                                               Perdidas.
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    # Lineas.
+    Perdidas_line = Potencia_Sij + Potencia_Sji
+    P_loss_lineas = np.real(Perdidas_line)
+    Q_loss_lineas = np.imag(Perdidas_line)
+
+    # Convertimos los arreglos en listas.
+    P_loss_lineas = list (P_loss_lineas)
+    Q_loss_lineas = list (Q_loss_lineas)
+    Pij_linea = list (Pij_linea)
+    Qij_linea = list (Qij_linea)
+    Pji_linea = list (Pji_linea)
+    Qji_linea = list (Qji_linea)
+
+    # Transformadores.
+    Perdidas_trx = Potencia_Sij2 + Potencia_Sji2
+    P_loss_trx = np.real(Perdidas_trx)
+    Q_loss_trx = np.imag(Perdidas_trx)
+
+    # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+    #                                                                              Salidas.
+    # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+
+    # Juntamos todos los valores en una sola variable.
+    Bus_i_linea.extend (Bus_i_TRX)
+    Bus_j_linea.extend (Bus_j_TRX)
+    ID_linea.extend (ID_trxS)
+    P_loss_lineas.extend (P_loss_trx)
+    Q_loss_lineas.extend (Q_loss_trx)
+    Pij_linea.extend (Pij_trx)
+    Qij_linea.extend (Qij_trx)
+    Pji_linea.extend (Pji_trx)
+    Qji_linea.extend (Qji_trx)
+
+    # Reescritura de las variables.
+    Salida_i = Bus_i_linea
+    Salida_j = Bus_j_linea
+    ID = ID_linea
+    P_loss = P_loss_lineas
+    Q_loss = Q_loss_lineas
+    Pij = Pij_linea
+    Qij = Qij_linea
+    Pji = Pji_linea
+    Qji = Qji_linea
+
+    return Salida_i, Salida_j, ID, P_loss, Q_loss, Pij, Qij, Pji, Qji

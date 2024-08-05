@@ -12,6 +12,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     trx_i = Bus_i_trx
     trx_j = Bus_j_trx
     Z_shunt = R_Shunt + 1j*X_Shunt
+    Y_shunt = np.reciprocal(Z_shunt)
 
     # Armamos la impedancia de las lineas.
     Z_lineas = R_lineas + 1j*X_lineas
@@ -80,30 +81,52 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     TRX_I = TRX_I.tolist() if isinstance(TRX_I, pd.Series) else TRX_I
     TRX_J = TRX_J.tolist() if isinstance(TRX_J, pd.Series) else TRX_J
     B_lineas= B_lineas.tolist() if isinstance(B_lineas, pd.Series) else B_lineas
-    Z_shunt= Z_shunt.tolist() if isinstance(Z_shunt, pd.Series) else Z_shunt
+    Y_shunt= Y_shunt.tolist() if isinstance(Y_shunt, pd.Series) else Y_shunt
+    
     Shunt_i = Bus_i_shunt.tolist() if isinstance(Bus_i_shunt, pd.Series) else Bus_i_shunt
+    Bus_i_lineas = Bus_i_lineas.tolist() if isinstance(Bus_i_lineas, pd.Series) else Bus_i_lineas
+    Bus_j_lineas = Bus_j_lineas.tolist() if isinstance(Bus_j_lineas, pd.Series) else Bus_j_lineas
 
-    # Combinamos las listas para obtener el numero maximo de conexiones a tierra.
-    Valores_maximos = TRX_I + B_lineas + Shunt_i + TRX_J + Z_shunt
+    # Buscamos el numero de conexiones a tierra que no se deben ser más que el númeto total de barras.
+    Bus_i_lineas.extend(Barra_j_lineas)
+    Bus_i_lineas.extend(Bus_i_trx)
+    Bus_i_lineas.extend(Bus_j_trx)
+    Bus_i_lineas.extend(Bus_i_shunt)
+    
+    # Agregamos las conexiones a tierra de las lineas.
+    B_lineas.extend(B_lineas)
+    B_lineas.extend(TRX_I)
+    B_lineas.extend(TRX_J)
+    B_lineas.extend(Y_shunt)
+    
+    # Paso 1: Combinar las listas
+    combined_list = list(zip(Bus_i_lineas, B_lineas))
 
-    #Filtrar el 0 de la lista combinada
-    Valores_filtrados = [value for value in Valores_maximos if value != 0]
-    Valores_filtrados = [int(value) for value in Valores_filtrados]
+    # Paso 2: Ordenar las listas combinadas según los elementos de Bus_i_lineas
+    combined_list.sort(key=lambda x: x[0])
 
-    # Crear un conjunto para eliminar duplicados
-    elementos_a_tierra = set(Valores_filtrados)
+    # Paso 3: Eliminar las posiciones donde los elementos de B_lineas sean 0
+    combined_list = [pair for pair in combined_list if pair[1] != 0]
 
-    # Bucle para eliminar los valores repetidos.
-    if Valores_filtrados:  # Verifica si la lista no está vacía
-        Tomas_a_tierra = max(Valores_filtrados)
-    else:
-            Tomas_a_tierra = 0
-            
+    # Paso 4: Eliminar las posiciones donde los elementos de Bus_i_lineas sean repetidos
+    seen = set()
+    unique_combined_list = []
+    for pair in combined_list:
+        if pair[0] not in seen:
+            unique_combined_list.append(pair)
+            seen.add(pair[0])
+
+    # Separar las listas combinadas de nuevo en Bus_i_lineas y B_lineas
+    lineas, Conex = zip(*unique_combined_list)
+    
     # Escogemos el numero total de conexiones a tierra.
-    Conexiones_a_Tierra = len(elementos_a_tierra) 
+    Conexiones_a_Tierra = len(Conex) 
+    Tomas_a_tierra = Conexiones_a_Tierra
+    elementos_a_tierra = lineas
             
     # Calculamos las admitancias de las lineas.
     Y_linea = np.reciprocal (Z_lineas)
+    Conex_lineas = Y_linea
 
     # ========================================================================= Mezclamos todas las listas. ==========================================================================================================
 
@@ -203,12 +226,12 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         MatrizA[contador_trx, elemento - 1] = 1
         contador_trx+=1
 
-    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, SeriesTRX
+    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, SeriesTRX, Conex_lineas
 
 def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, R_Shunt, X_Shunt, B_lineas, elementos_a_tierra_arr, Barra_tap, Tap_trx, Bus_i_trx, Bus_j_trx, Bus_i_shunt, Bus_i_lineas, Bus_j_lineas):
     
   # Encontramos el número de filas totales con las conexiones entre barras.
-    Filas_totales = max (int(max(Barra_i_conex)), int (max(Barra_j_conex)))
+    Filas_totales = len(Y_linea)
 
     # Agregamos las filas que poseen las conexiones a tierra.
     Filas_totales = Filas_totales + len (elementos_a_tierra_arr)

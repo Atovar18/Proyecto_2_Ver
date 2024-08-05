@@ -4,7 +4,7 @@ import math
 
 # ============================================================================== Comenzamos la lectura de los datos ==========================================================================================
 # Ruta al archivo Excel
-ruta_archivo = 'Datos/Data_io.xlsx'
+ruta_archivo = 'Datos/Data_io2.xlsx'
 
 # Cargar el archivo Excel
 archivo_excel = pd.ExcelFile(ruta_archivo)
