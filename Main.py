@@ -42,7 +42,7 @@ Y_Bus = Y_bus.Y_BUS (MatrizA, Y_rama)
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 if GS == 'Y': 
     # Llamamos a la función de Gauss Saidel.
-    Modulos_GS, Angulos_GS, Fasores_GS, Iteracion_GS, Error_GS = Gauus.Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter)
+    Modulos_GS, Angulos_GS, Fasores_GS, Iteracion_GS, Error_GS = Gauus.Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter, Z_zip, I_zip, P_zip)
     
     # Calculamos los flujos.
     Salida_i_GS, Salida_j_GS, ID_GS, P_loss_GS, Q_loss_GS, Pij_GS, Qij_GS, Pji_GS, Qji_GS = Sflow.Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas, Bus_i_TRX_n, Bus_j_TRX_n, ID_trx, Xcc_trx, Tap_trx, Barra_tap, Fasores_GS, Conex_lineas, SeriesTRX, Bus_i_TRX_n, Bus_j_TRX_n)

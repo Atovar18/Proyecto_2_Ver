@@ -1,7 +1,8 @@
 import numpy as np
 import time
+from Modulos import Carga_Zip
 
-def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter):
+def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter, Z_zip, I_zip, P_zip):
     Inicio = time.time()
     # Creamos copias de los datos para no afectar las variables.
     P_gen2 = P_gen.copy()
@@ -12,6 +13,9 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
     # Calculamos la potencia especifica de cada barra.
     P_especifica = P_gen2 - P_demanda2
     Q_espeficia = Q_gen2 - Q_demanda2
+    
+    print (P_especifica)
+    print (Q_espeficia)
 
     # Creamos el fasor de voltaje con angulo 0 inicial. 
     Fasor_V = V_pu * np.exp(1j * np.radians(V_ang))
@@ -83,6 +87,9 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
         
         else:
             Fasor_V = V_salida.copy()
+            Modulos = abs (V_salida)
+            P_especifica, Q_espeficia = Carga_Zip.Cargas_Variables(P_demanda, Q_demanda, P_gen2, Q_gen2, Modulos, Z_zip, I_zip, P_zip)
+
         
         if Indice == Max_iter:
             break

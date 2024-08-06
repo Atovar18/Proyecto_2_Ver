@@ -203,7 +203,7 @@ def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus
         print ()
         print ('Las conexiones no coinciden.')
         print ('Barras:',Max_Barra)
-        print ('Elementos conectados:',Valor_maximo)
+        print ('Elementos interconectados:',Valor_maximo)
         exit ()  
     
     return
