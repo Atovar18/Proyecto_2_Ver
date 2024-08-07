@@ -13,9 +13,6 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
     # Calculamos la potencia especifica de cada barra.
     P_especifica = P_gen2 - P_demanda2
     Q_espeficia = Q_gen2 - Q_demanda2
-    
-    print (P_especifica)
-    print (Q_espeficia)
 
     # Creamos el fasor de voltaje con angulo 0 inicial. 
     Fasor_V = V_pu * np.exp(1j * np.radians(V_ang))
@@ -109,8 +106,7 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
 
     Final = time.time()
     tiempo_transcurrido = Final - Inicio
-    print()
-    print(f"Tiempo transcurrido en GS: {tiempo_transcurrido:.3f} segundos")
+    print (f"El tiempo de ejecucion en GS fue de {tiempo_transcurrido:.3f} segundos.")
     print ()
     
     return Modulos_GS, Angulos_GS, Fasores_GS, Indice, Error
