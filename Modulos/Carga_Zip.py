@@ -28,4 +28,4 @@ def Cargas_Variables (P_demanda, Q_demanda,P_gen, Q_gen, Modulos, Z_zip, I_zip, 
     P_especifica = P_gen - P_demanda
     Q_especifica = Q_gen - Q_demanda
     
-    return P_especifica, Q_especifica
+    return P_especifica, Q_especifica, P_demanda, Q_demanda

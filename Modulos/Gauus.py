@@ -12,7 +12,7 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
 
     # Calculamos la potencia especifica de cada barra.
     P_especifica = P_gen2 - P_demanda2
-    Q_espeficia = Q_gen2 - Q_demanda2
+    Q_especifica = Q_gen2 - Q_demanda2
 
     # Creamos el fasor de voltaje con angulo 0 inicial. 
     Fasor_V = V_pu * np.exp(1j * np.radians(V_ang))
@@ -43,7 +43,7 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
                         Sum1 += Y_Bus[i][j] * V_salida[j]
                 
                 # Calculamos el termino constante.
-                termino1 = np.conjugate((P_especifica [i] + 1j * Q_espeficia [i]) / V_salida[i])
+                termino1 = np.conjugate((P_especifica [i] + 1j * Q_especifica [i]) / V_salida[i])
                 
                 # Calculamos el valor de la tensión.
                 V_salida [i] = (termino1 - Sum1) / Y_Bus[i][i]               
@@ -65,10 +65,10 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
                         q2 += Y_Bus[i][p] * V_salida[p]
                         
                 # Sustituimos el valor de Q_especifica.
-                Q_espeficia [i] = - np.imag(q2 * (np.conjugate(V_salida[i])))
+                Q_especifica [i] = - np.imag(q2 * (np.conjugate(V_salida[i])))
                 
                 # Calculamos el termino constante.
-                termino2 = np.conjugate((P_especifica [i] + 1j * Q_espeficia [i]) / V_salida[i])
+                termino2 = np.conjugate((P_especifica [i] + 1j * Q_especifica [i]) / V_salida[i])
                 
                 # Calculamos el valor de la tensión.
                 V_salida [i] = (termino2 - Sum2) / Y_Bus[i][i]
@@ -85,7 +85,10 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
         else:
             Fasor_V = V_salida.copy()
             Modulos = abs (V_salida)
-            P_especifica, Q_espeficia = Carga_Zip.Cargas_Variables(P_demanda, Q_demanda, P_gen2, Q_gen2, Modulos, Z_zip, I_zip, P_zip)
+            P_especifica, Q_especifica, P_demanda2, Q_demanda2 = Carga_Zip.Cargas_Variables(P_demanda2, Q_demanda2, P_gen2, Q_gen2, Modulos, Z_zip, I_zip, P_zip)
+        
+        P_return = P_especifica
+        Q_return = Q_especifica
 
         
         if Indice == Max_iter:
@@ -109,4 +112,4 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
     print (f"El tiempo de ejecucion en GS fue de {tiempo_transcurrido:.3f} segundos.")
     print ()
     
-    return Modulos_GS, Angulos_GS, Fasores_GS, Indice, Error
+    return Modulos_GS, Angulos_GS, Fasores_GS, Indice, Error, P_return, Q_return

@@ -1,21 +1,23 @@
 import math as mt
 import numpy as np
 
-def Potencia_activa (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, angulo_radianes, k, P_especificada):
-    Resultado = 0
+def Potencia_activa (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, angulo_radianes, i, P_especificada):
+    Valor_2 = 0
     
     # Calculamos los valores fijos.
-    Valor_1 = (Modulo[k]**2)*(Y_modulos_matriz[k,k])*np.cos(Y_angulos_matriz[k,k])
+    #print (Y_modulos_matriz[i,i])
+    print ('Angulos en Y:',Y_angulos_matriz[i,i])
+    Valor_1 = (Modulo[i]**2)*(Y_modulos_matriz[i,i])*np.cos(Y_angulos_matriz[i,i])
     
-    for h in range (len(Bus_type)):
-        if h != k:
+    for j in range (len(Bus_type)):
+        if i != j:
+            #print (f'El valor de i es: {i+1} y el valor de j es: {j+1}')
             # Calculamos los valores variables.
-            Valor_2 = Modulo[k]*Modulo[h]*Y_modulos_matriz[k,h]*np.cos(angulo_radianes[k] - 
-            angulo_radianes[h] - Y_angulos_matriz[k,h])
-
-            # Juntamos todos los terminos.
-            Valor_1 += Valor_2
-    Resultado = P_especificada [k] - Valor_1
+            Valor_2 += Modulo[i]*Modulo[j]*Y_modulos_matriz[i,j]*np.cos(angulo_radianes[i] - angulo_radianes[j] - Y_angulos_matriz[i,j])
+    print ()         
+    cosa = Valor_1 + Valor_2
+    toma = P_especificada [i]
+    Resultado = toma - cosa
     
     return Resultado
 
@@ -27,8 +29,7 @@ def Potencia_reactiva (Modulo, Y_modulos_matriz, Y_angulos_matriz, k, Q_especifi
     for h in range (len(Modulo)):
         if h != k:
             # Calculamos los valores variables.
-            Valor_4 = Modulo[k]*Modulo[h]*Y_modulos_matriz[k,h]*mt.sin(angulo_radianes[k] - 
-            angulo_radianes[h] - Y_angulos_matriz[k,h])
+            Valor_4 = Modulo[k]*Modulo[h]*Y_modulos_matriz[k,h]*np.sin(angulo_radianes[k] - angulo_radianes[h] - Y_angulos_matriz[k,h])
 
             # Juntamos todos los terminos.
             Valor_3 += Valor_4
@@ -104,8 +105,9 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
         for j in range (n):
             
             if i != j:
-                F_Daigonal_P [i,j] = -Modulo [i]*Modulo [j]*Y_modulos_matriz [i,j]*mt.sin(angulo_radianes [i] - angulo_radianes [j] - Y_angulos_matriz [i,j])
 
+                Toma = -Modulo [j]*Modulo [i]*Y_modulos_matriz [i,j]*np.sin(angulo_radianes [j] - angulo_radianes [i] - Y_angulos_matriz [j,i])             
+                F_Daigonal_P [i,j] = Toma
     # Juntamos Matrices. 
     Jacoviana_P = Daigonal_P + F_Daigonal_P
 
@@ -117,7 +119,6 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
     # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     # Armamos la matriz Jacobiana de Potencias Activas respecto al voltaje.
-
     P_V_Diagonal = np.matrix(np.zeros((n,n)))
     P_V_F_Diagonal = np.matrix(np.zeros((n,n)))
     Valor_2 = 0
@@ -128,10 +129,10 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
         if Bus_type [i] == 'SL':
             continue
         
+        Valor_1 = -2*Modulo [i]*Y_modulos_matriz [i,i]*mt.cos(Y_angulos_matriz [i,i])
         for j in range (n):
                 
             if i != j:
-                Valor_1 = -2*Modulo [i]*Y_modulos_matriz [i,i]*mt.cos(Y_angulos_matriz [i,i])
                 Valor_2 += Modulo [j] * Y_modulos_matriz [i,j] * mt.cos(angulo_radianes [i] - angulo_radianes [j] - Y_angulos_matriz [i,j])
                 
         Valor = Valor_1 - Valor_2 
@@ -147,7 +148,7 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
             for j in range (n):
                 
                 if i != j:
-                    P_V_F_Diagonal [i,j] = - Modulo [j]* Y_modulos_matriz [i,j] * mt.cos(angulo_radianes [i] - angulo_radianes [j] - Y_angulos_matriz [i,j])
+                    P_V_F_Diagonal [j,i] = - Modulo [j]* Y_modulos_matriz [j,i] * mt.cos(angulo_radianes [j] - angulo_radianes [i] - Y_angulos_matriz [j,i])
 
     # Juntamos las matrices.
     Jacoviana_P_Voltaje = P_V_Diagonal + P_V_F_Diagonal
@@ -159,7 +160,7 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
 
     # Eliminar Filas donde Bus_type == "PQ"
     indices_a_eliminar = [i-1 for i, tipo in enumerate(Bus_type) if tipo == "PV"]
-    Jacoviana_P_Voltaje = np.delete(Jacoviana_P_Voltaje, indices_a_eliminar, axis=0)  # Eliminar filas
+    Jacoviana_P_Voltaje = np.delete(Jacoviana_P_Voltaje, indices_a_eliminar, axis=1)  # Eliminar filas
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -240,8 +241,9 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
     # Eliminar filas que contienen solo ceros
     Jacoviana_Q_Voltaje = Jacoviana_Q_Voltaje[~np.all(Jacoviana_Q_Voltaje == 0, axis=1)]
 
-    # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    Jacoviana_P_Voltaje = np.transpose(Jacoviana_P_Voltaje)
+    # ******************************************************************************************************************************************************************************************************************************************************************
+    #                                                       Armado la matriz Jacobiana final.
+    # ******************************************************************************************************************************************************************************************************************************************************************
 
     # Juntamos la matrices Jacobianas correspondientes a los angulos.
     matriz1 = Jacoviana_P
@@ -287,3 +289,27 @@ def Jacobiana_Potencias (Bus_type, Modulo, Y_modulos_matriz, Y_angulos_matriz, a
     # Combinar las matrices horizontalmente
     Jacoviana = np.hstack((matriz_combinada_angulos, matriz_combinada_voltaje))
     return Jacoviana
+
+import sympy as sp
+
+def Jacobiana (Expresion_P, angulos_var, voltaje_var, Expresion_Q, v_ang, v_mod):
+    
+    #Jacobianos
+    #jacobianos de potencia activa
+    JdeltaPalpha = Expresion_P.jacobian([valores for valores in angulos_var])
+    JdeltaPvolt = Expresion_P.jacobian([valores for valores in voltaje_var]) 
+    jacobian_p = JdeltaPalpha.row_join(JdeltaPvolt)
+    #Jacobiano de potencia reactiva
+    JdeltaQalpha = Expresion_Q.jacobian([valores for valores in angulos_var])
+    JdeltaQvolt = Expresion_Q.jacobian([valores for valores in voltaje_var])
+    jacobian_q = JdeltaQalpha.row_join(JdeltaQvolt)
+
+    #Uniendo valores
+    values_bf = v_ang.col_join(v_mod)
+    Jacobian = jacobian_p.col_join(jacobian_q)
+    f_powers = Expresion_P.col_join(Expresion_Q)
+    values_next = sp.zeros(values_bf.rows,values_bf.cols)
+    
+    
+    
+    return
