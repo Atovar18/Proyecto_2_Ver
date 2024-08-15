@@ -86,95 +86,97 @@ if DC == 'Y':
 #                                                                              Escritura de resultados
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# Crear la carpeta 'Salida' si no existe
-output_dir = 'Salida'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+# Condición para la escritura de los resultados.
+if GS == 'Y' or NR == 'Y' or DC == 'Y' or FD == 'Y':
 
-# Generar un nombre de archivo único
-base_filename = 'Resultado'
-extension = '.xlsx'
-filename = base_filename + extension
-counter = 1
+    # Crear la carpeta 'Salida' si no existe
+    output_dir = 'Salida'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-while os.path.exists(os.path.join(output_dir, filename)):
-    filename = f"{base_filename}{counter}{extension}"
-    counter += 1
+    # Generar un nombre de archivo único
+    base_filename = 'Resultado'
+    extension = '.xlsx'
+    filename = base_filename + extension
+    counter = 1
 
-# Crear el archivo de salida en la carpeta 'Salida'
-output_path = os.path.join(output_dir, filename)
-writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
+    while os.path.exists(os.path.join(output_dir, filename)):
+        filename = f"{base_filename}{counter}{extension}"
+        counter += 1
 
-# Leemos los datos de nuestro master.
-# ----------------------------------------------------------------- Datos --------------------------------------------------------------------------------------
-Lineas = pd.read_excel(ruta_archivo, sheet_name='LINES')
-Bus = pd.read_excel(ruta_archivo, sheet_name='BUS')
-TRX = pd.read_excel(ruta_archivo, sheet_name='TRX')
-SHUNT_ELEMENTS = pd.read_excel(ruta_archivo, sheet_name='SHUNT_ELEMENTS')
+    # Crear el archivo de salida en la carpeta 'Salida'
+    output_path = os.path.join(output_dir, filename)
+    writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
 
-# ***************************************************************************************************************************************************************************************************************************************
-#                                                                               Exportamos los datos al archivo Excel.
-# ***************************************************************************************************************************************************************************************************************************************
+    # Leemos los datos de nuestro master.
+    # ----------------------------------------------------------------- Datos --------------------------------------------------------------------------------------
+    Lineas = pd.read_excel(ruta_archivo, sheet_name='LINES')
+    Bus = pd.read_excel(ruta_archivo, sheet_name='BUS')
+    TRX = pd.read_excel(ruta_archivo, sheet_name='TRX')
+    SHUNT_ELEMENTS = pd.read_excel(ruta_archivo, sheet_name='SHUNT_ELEMENTS')
 
-# Llamamos la función de escritura de los datos.
-Salida.Datos(writer, Lineas, Bus, TRX, SHUNT_ELEMENTS)
-
-# --------------------------------------------------------------- Gauss Saidel ---------------------------------------------------------------------------------
-if GS == 'Y':
-    # Creamos la hoja de resultados.
-    GS_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS GS', index=False)
-    
-    # Extraemos la hoja de flujos.
-    SF_GS = pd.read_excel(ruta_archivo, sheet_name='POWER FLOW GS')
-    
     # ***************************************************************************************************************************************************************************************************************************************
     #                                                                               Exportamos los datos al archivo Excel.
     # ***************************************************************************************************************************************************************************************************************************************
-    
-    # Escribimos resultados.
-    Salida.Gauss(writer, ID_Barras, Modulos_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_return_GS, Q_return_GS, Iteracion_GS, Error_GS)
-    
-    # Escribimos los flujos.
-    Salida.Sflow_GS(writer, Pij_GS, Qij_GS, Pji_GS, Qji_GS, P_loss_GS, Q_loss_GS, ID_GS, Salida_i_GS, Salida_j_GS, SF_GS)
- 
-# --------------------------------------------------------------- Newton Raphson ---------------------------------------------------------------------------------   
-if NR == 'Y':
-    # Creamos la hoja de resultados.
-    NR_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS NR', index=False)
-    
-    # Extraemos la hoja de flujos.
-    SF_NR = pd.read_excel(ruta_archivo, sheet_name='POWER FLOW NR')
-    
-    # ***************************************************************************************************************************************************************************************************************************************
-    #                                                                               Exportamos los datos al archivo Excel.
-    # ***************************************************************************************************************************************************************************************************************************************
-    
-    # Escribimos resultados.
-    Salida.NR(writer, ID_Barras, Modulos_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_return_NR, Q_return_NR, Iteracion_NR, Error_NR)
-    
-    # Escribimos los flujos.
-    Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)  
-    
-if DC == 'Y':
-    # Creamos la hoja de resultados.
-    DC_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS LINEAL', index=False)
-    
-    # ***************************************************************************************************************************************************************************************************************************************
-    #                                                                               Exportamos los datos al archivo Excel.
-    # ***************************************************************************************************************************************************************************************************************************************
-    
-    # Escribimos resultados.
-    Salida.Lineal(writer, DC_S, Angulos_Lineales, Barra_i_totales) 
 
-# Cerramos la escritura.
-writer.close()
+    # Llamamos la función de escritura de los datos.
+    Salida.Datos(writer, Lineas, Bus, TRX, SHUNT_ELEMENTS)
 
+    # --------------------------------------------------------------- Gauss Saidel ---------------------------------------------------------------------------------
+    if GS == 'Y':
+        # Creamos la hoja de resultados.
+        GS_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS GS', index=False)
+        
+        # Extraemos la hoja de flujos.
+        SF_GS = pd.read_excel(ruta_archivo, sheet_name='POWER FLOW GS')
+        
+        # ***************************************************************************************************************************************************************************************************************************************
+        #                                                                               Exportamos los datos al archivo Excel.
+        # ***************************************************************************************************************************************************************************************************************************************
+        
+        # Escribimos resultados.
+        Salida.Gauss(writer, ID_Barras, Modulos_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_return_GS, Q_return_GS, Iteracion_GS, Error_GS)
+        
+        # Escribimos los flujos.
+        Salida.Sflow_GS(writer, Pij_GS, Qij_GS, Pji_GS, Qji_GS, P_loss_GS, Q_loss_GS, ID_GS, Salida_i_GS, Salida_j_GS, SF_GS)
+    
+    # --------------------------------------------------------------- Newton Raphson ---------------------------------------------------------------------------------   
+    if NR == 'Y':
+        # Creamos la hoja de resultados.
+        NR_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS NR', index=False)
+        
+        # Extraemos la hoja de flujos.
+        SF_NR = pd.read_excel(ruta_archivo, sheet_name='POWER FLOW NR')
+        
+        # ***************************************************************************************************************************************************************************************************************************************
+        #                                                                               Exportamos los datos al archivo Excel.
+        # ***************************************************************************************************************************************************************************************************************************************
+        
+        # Escribimos resultados.
+        Salida.NR(writer, ID_Barras, Modulos_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_return_NR, Q_return_NR, Iteracion_NR, Error_NR)
+        
+        # Escribimos los flujos.
+        Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)  
+        
+    if DC == 'Y':
+        # Creamos la hoja de resultados.
+        DC_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS LINEAL', index=False)
+        
+        # ***************************************************************************************************************************************************************************************************************************************
+        #                                                                               Exportamos los datos al archivo Excel.
+        # ***************************************************************************************************************************************************************************************************************************************
+        
+        # Escribimos resultados.
+        Salida.Lineal(writer, DC_S, Angulos_Lineales, Barra_i_totales) 
 
-#print ()
-#print ('Calculos guardados en la carpeta "Salida", archivo:', filename)
-#print ()
+    # Cerramos la escritura.
+    writer.close()
+    print ()
+    print ('Calculos guardados en la carpeta "Salida", archivo:', filename)
+    print ()
 
-
+if GS == 'N' and NR == 'N' and DC == 'N' and FD == 'N':
+    print ('No se ha seleccionado ningún método de cálculo.')
 
 # ============================================================================= Fin de la rutina. ==========================================================================================================================================================================================================================================
 #Final = time.time()
