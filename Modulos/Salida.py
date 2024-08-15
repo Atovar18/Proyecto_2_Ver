@@ -188,3 +188,15 @@ def Sflow_NR (writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_l
     
     
     return
+
+def Lineal (writer, DC, Angulos_Lineales, Bus_i_Barras):
+    
+    # Colocamos el fomrato correcto por si hacer falta.
+    Angulos_Lineales = pd.DataFrame (Angulos_Lineales)
+    Bus_i_Barras = pd.DataFrame (Bus_i_Barras)
+    
+    # ================================================ Escribimos los resultados del metodo lineal ====================================================
+    Bus_i_Barras.to_excel(writer, sheet_name='RESULTS DC', header= ['Bus i'], index=False, startcol=0)
+    Angulos_Lineales.to_excel(writer, sheet_name='RESULTS DC', header= ['<V (degree)'], index=False, startcol=1)
+    
+    return

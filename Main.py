@@ -4,8 +4,8 @@ from Modulos import Gauus
 from Modulos import Sflow
 from Modulos import Potencia
 from Modulos import Newton_Rapson
-from Modulos import Prueba
 from Modulos import Salida
+from Modulos import Lineal
 import numpy as np
 import pandas as pd
 import itertools
@@ -72,6 +72,15 @@ if NR == 'Y':
     
     # Calculamos las potencias de los generadores.   
     P_gen_NR, Q_gen_NR = Potencia.Potencia_entregada (Bus_type, Fasores_NR, Y_Bus)
+    
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#                                                                              Método de Newton Lineal.                                               
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+if DC == 'Y':
+    
+    # Llamaos a la función de Newton DC.
+    Angulos_Lineales = Lineal.Newton_DC (P_gen, P_demanda, X_lineas, Xcc_trx, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus_type)
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #                                                                              Escritura de resultados
@@ -144,7 +153,18 @@ if NR == 'Y':
     Salida.NR(writer, ID_Barras, Modulos_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_return_NR, Q_return_NR, Iteracion_NR, Error_NR)
     
     # Escribimos los flujos.
-    Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)   
+    Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)  
+    
+if DC == 'Y':
+    # Creamos la hoja de resultados.
+    DC_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS LINEAL', index=False)
+    
+    # ***************************************************************************************************************************************************************************************************************************************
+    #                                                                               Exportamos los datos al archivo Excel.
+    # ***************************************************************************************************************************************************************************************************************************************
+    
+    # Escribimos resultados.
+    Salida.Lineal(writer, DC_S, Angulos_Lineales, Barra_i_totales) 
 
 # Cerramos la escritura.
 writer.close()
@@ -161,3 +181,6 @@ writer.close()
 #print ()
 #print ('El tiempo de ejecución es de: ', Final - Comienzo, 'segundos.')
 #print ()
+
+
+
