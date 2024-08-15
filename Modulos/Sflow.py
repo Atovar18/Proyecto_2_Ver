@@ -1,20 +1,22 @@
 import numpy as np
+import pandas as pd
 
 
-def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas, Bus_i_TRX, Bus_j_TRX, ID_trx, Xcc_trx, Tap_trx, Barra_tap, Fasores_GS, Conex_lineas, SeriesTRX, Bus_i_TRX_n, Bus_j_TRX_n):
+def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_TRX, ID_trx, Tap_trx, Fasores_GS, Conex_lineas, SeriesTRX):
 
     Potencia_Sij = np.array([]); Potencia_Sji = np.array([]); Potencia_Sij2 = np.array([]); Potencia_Sji2 = np.array([])
+    
+
 
     Indice_Line = list (zip (Bus_i_lineas, Bus_j_lineas))
-    Indice_TRX = list (zip (Bus_i_TRX_n, Bus_j_TRX_n))
+    Indice_TRX = list (zip (Barrai_TRX, Barraj_TRX))
 
     Bus_i_linea = list (Bus_i_lineas)
     Bus_j_linea = list (Bus_j_lineas)
-    Bus_i_TRX = list (Bus_i_TRX_n)
-    Bus_j_TRX = list (Bus_j_TRX_n)
+    Bus_i_TRX = list (Barrai_TRX)
+    Bus_j_TRX = list (Barraj_TRX)
     ID_linea = list (ID_lineas)
     ID_trxS = list (ID_trx)
-
 
     for posicion, nexos in enumerate (Indice_Line):
         
@@ -161,14 +163,35 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, R_lineas, X_lineas, B_lineas,
     Qji_linea.extend (Qji_trx)
 
     # Reescritura de las variables.
-    Salida_i = Bus_i_linea
-    Salida_j = Bus_j_linea
-    ID = ID_linea
-    P_loss = P_loss_lineas
-    Q_loss = Q_loss_lineas
-    Pij = Pij_linea
-    Qij = Qij_linea
-    Pji = Pji_linea
-    Qji = Qji_linea
+    Salida_i = list (Bus_i_linea)
+    Salida_j = list (Bus_j_linea)
+    ID = list (ID_linea)
+    P_loss = list (P_loss_lineas)
+    Q_loss = list (Q_loss_lineas)
+    Pij = list (Pij_linea)
+    Qij = list (Qij_linea)
+    Pji = list (Pji_linea)
+    Qji = list (Qji_linea)
 
+    # Ordenamos en función de las barras. 
+    # Paso 1: Crear lista de tuplas
+    lista_combinada = list(zip(Salida_i, Salida_j, P_loss, Q_loss, Pij, Qij, Pji, Qji, ID))
+
+    # Paso 2: Ordenar la lista de tuplas por el primer elemento de cada tupla (que corresponde a Barra_i)
+    lista_combinada_ordenada = sorted(lista_combinada, key=lambda x: x[0]) 
+
+    # Paso 3: Desempaquetar en las listas originales
+    Salida_i, Salida_j, P_loss, Q_loss, Pij, Qij, Pji, Qji, ID  = map(list,zip(*lista_combinada_ordenada))
+
+    # Paso 4: Regresamos las listas a su estado inical.
+    Salida_i =  list(Salida_i)
+    Salida_j =  list(Salida_j)
+    ID = list(ID)
+    P_loss = list(P_loss)
+    Q_loss = list(Q_loss)
+    Pij = list(Pij)
+    Qij = list(Qij)
+    Pji = list(Pji)
+    Qji = list(Qji)
+    
     return Salida_i, Salida_j, ID, P_loss, Q_loss, Pij, Qij, Pji, Qji

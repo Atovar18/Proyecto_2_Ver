@@ -3,7 +3,7 @@ import pandas as pd
 import itertools
 # ============================================================================= Creación de las matrices Y_rama. ========================================================================================================
 
-def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Bus_i_shunt, R_Shunt, X_Shunt): 
+def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Bus_i_shunt, R_Shunt, X_Shunt, ID_lineas, ID_trx): 
     # Seleccionamos las variables a trabajar. 
     Barras = Barra_i
     Barra_i = Bus_i_lineas
@@ -150,11 +150,14 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     Barra_i = list(Barra_i)
     Barra_j = list(Barra_j)
     Y_linea = list(Y_linea)
-
+    ID_lineas = list(ID_lineas)
+    ID_trx = list(ID_trx)
+    
     # Agregamos los valores a las listas.
     Barra_i.extend (Bus_i_trx)
     Barra_j.extend (Bus_j_trx)
     Y_linea.extend (SeriesTRX)
+    ID_lineas.extend (ID_trx)
 
     # Convertimos todos los valores a enteros.
     for i in range (len(Barra_i)):
@@ -167,18 +170,19 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         
     # Ordenamos los valores. 
     # Paso 1: Crear lista de tuplas
-    lista_combinada = list(zip(Barra_i, Barra_j, Y_linea ))
+    lista_combinada = list(zip(Barra_i, Barra_j, Y_linea, ID_lineas))
 
     # Paso 2: Ordenar la lista de tuplas por el primer elemento de cada tupla (que corresponde a Barra_i)
     lista_combinada_ordenada = sorted(lista_combinada, key=lambda x: x[0]) 
 
     # Paso 3: Desempaquetar en las listas originales
-    Barra_i, Barra_j, Y_linea  = map(list,zip(*lista_combinada_ordenada))
+    Barra_i, Barra_j, Y_linea, ID_lineas  = map(list,zip(*lista_combinada_ordenada))
 
     # Paso 4: Regresamos las listas a su estado inical.
     Barra_i_conex = pd.Series(Barra_i)
     Barra_j_conex = pd.Series(Barra_j)
     Y_linea = pd.Series (Y_linea)
+    ID_lineas = pd.Series (ID_lineas)
 
     # Convertimos los valores finales a listas.
     Barra_i_conex = list(Barra_i_conex)
@@ -246,7 +250,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         MatrizA[contador_trx, elemento - 1] = 1
         contador_trx+=1
 
-    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, SeriesTRX, Conex_lineas
+    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, SeriesTRX, Conex_lineas, ID_lineas
 
 def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, R_Shunt, X_Shunt, B_lineas, elementos_a_tierra_arr, Barra_tap, Tap_trx, Bus_i_trx, Bus_j_trx, Bus_i_shunt, Bus_i_lineas, Bus_j_lineas):
     

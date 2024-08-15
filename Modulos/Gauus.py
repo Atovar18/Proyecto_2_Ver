@@ -87,8 +87,8 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
             Modulos = abs (V_salida)
             P_especifica, Q_especifica, P_demanda2, Q_demanda2 = Carga_Zip.Cargas_Variables(P_demanda2, Q_demanda2, P_gen2, Q_gen2, Modulos, Z_zip, I_zip, P_zip)
         
-        P_return = P_especifica
-        Q_return = Q_especifica
+        P_return = P_demanda2
+        Q_return = Q_demanda2
 
         
         if Indice == Max_iter:

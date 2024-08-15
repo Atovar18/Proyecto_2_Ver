@@ -100,7 +100,7 @@ def BUS ():
             
         # Ahora podemos retornar los valores calculados y extraidos de los datos.
         
-    return ID_Barras, Barra_i, Bus_type, Modulo_V, Angulos_grados, P_gen, Q_gen, P_demanda, Q_demanda, Z_zip, I_zip, P_zip
+    return ID_Barras, Barra_i, Bus_type, Modulo_V, Angulos_grados, P_gen, Q_gen, P_demanda, Q_demanda, Z_zip, I_zip, P_zip, ruta_archivo
 
 def LINES ():
 
@@ -148,7 +148,17 @@ def TRX ():
     Tap_trx = Transformadores.iloc[:, 5]
     Barra_tap = Transformadores.iloc[:, 6]
     
-    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Barra_tap
+    # Creamos una copia para efectos de los valores originales para control de los flujos.
+    Barrai_TRX = Bus_i_trx.copy()
+    Barraj_TRX = Bus_j_trx.copy()
+    
+    for i, tap in enumerate(Barra_tap):
+        valor_original = Bus_i_trx [i]
+        Barrai_TRX[i] = tap  # Sustituir en Bus_i_p
+        if valor_original != tap:  # Solo si el valor es diferente
+            Barraj_TRX[i] = valor_original  # Agregar el valor original a Bus_j_TRX en la misma posición.
+    
+    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Barra_tap, Barrai_TRX, Barraj_TRX
 
 def SHUNT_ELEMENTS ():
 

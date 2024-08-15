@@ -153,8 +153,8 @@ def newtonRaphson(Convergencia, max_iter,y_bus,p_gen,p_load,q_gen,q_load,v_bar,b
         
         # Determinamos las nuevas P y Q de carga según el modelo ZIP.
         p_especificada, q_especifica, P_carga, Q_carga = Carga_Zip.Cargas_Variables(P_carga, Q_carga, p_gen2, q_gen2, Voltajes_modulos, Z_zip, I_zip, P_zip)
-        p_return = p_especificada
-        q_return = q_especifica
+        p_return = P_carga
+        q_return = Q_carga
         p_especificada = np.array (p_especificada)
         q_especifica = np.array (q_especifica) 
         
