@@ -11,6 +11,7 @@ import pandas as pd
 import itertools
 import time 
 import math as mt
+import os
 
 
 
@@ -76,8 +77,24 @@ if NR == 'Y':
 #                                                                              Escritura de resultados
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# Creamos el archivo de salida.
-writer = pd.ExcelWriter('Resultados.xlsx', engine='xlsxwriter')
+# Crear la carpeta 'Salida' si no existe
+output_dir = 'Salida'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Generar un nombre de archivo único
+base_filename = 'Resultado'
+extension = '.xlsx'
+filename = base_filename + extension
+counter = 1
+
+while os.path.exists(os.path.join(output_dir, filename)):
+    filename = f"{base_filename}{counter}{extension}"
+    counter += 1
+
+# Crear el archivo de salida en la carpeta 'Salida'
+output_path = os.path.join(output_dir, filename)
+writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
 
 # Leemos los datos de nuestro master.
 # ----------------------------------------------------------------- Datos --------------------------------------------------------------------------------------
@@ -127,24 +144,14 @@ if NR == 'Y':
     Salida.NR(writer, ID_Barras, Modulos_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_return_NR, Q_return_NR, Iteracion_NR, Error_NR)
     
     # Escribimos los flujos.
-    Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)
-    
-
-    
-    
-
-
-
-
-
-    
+    Salida.Sflow_NR(writer, Pij_NR, Qij_NR, Pji_NR, Qji_NR, P_loss_NR, Q_loss_NR, ID_NR, Salida_i_NR, Salida_j_NR, SF_NR)   
 
 # Cerramos la escritura.
 writer.close()
 
 
 #print ()
-#print ('Calculos guardados en Resultados.xlsx')
+#print ('Calculos guardados en la carpeta "Salida", archivo:', filename)
 #print ()
 
 
