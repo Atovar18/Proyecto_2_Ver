@@ -93,17 +93,18 @@ def newtonRaphson(Convergencia, max_iter,y_bus,p_gen,p_load,q_gen,q_load,v_bar,b
     Delta_P = sp.Matrix(p_especificada) - sp.Matrix(Delta_P)
     Delta_Q = sp.Matrix(q_especifica) - sp.Matrix(Delta_Q)
 
-    # ------------------------------------------- Matriz Jacobiana -------------------------------------------------------------------------------------------
-    #jacobianos de potencia activa
+    # ----------------------------------------------------------- Matriz Jacobiana -------------------------------------------------------------------------------------------
+    # Jacobianos de potencia activa.
     JdeltaPalpha = Delta_P.jacobian([valores for valores in ang_var])
     JdeltaPvolt = Delta_P.jacobian([valores for valores in vol_var]) 
     jacobian_p = JdeltaPalpha.row_join(JdeltaPvolt)
-    #Jacobiano de potencia reactiva
+    
+    # Jacobiano de potencia reactiva.
     JdeltaQalpha = Delta_Q.jacobian([valores for valores in ang_var])
     JdeltaQvolt = Delta_Q.jacobian([valores for valores in vol_var])
     jacobian_q = JdeltaQalpha.row_join(JdeltaQvolt)
 
-    #Uniendo valores
+    # Uniendo valores.
     values_bf = v_ang.col_join(v_mod)
     Jacobian = jacobian_p.col_join(jacobian_q)
     f_powers = Delta_P.col_join(Delta_Q)

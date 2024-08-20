@@ -25,7 +25,6 @@ def Gauss (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_dema
     angulos_grados_GS = pd.DataFrame (Angulos_GS)
     P_generada = pd.DataFrame (P_gen_GS)
     Q_generada = pd.DataFrame (Q_gen_GS)
-    Q_demanda = Q_demanda.apply(lambda x: x.imag)
     P_i = [] # Lista para almacenar la potencia generada menos la demanda
     Q_i = [] # Lista para almacenar la potencia generada menos la demanda
 
@@ -33,10 +32,10 @@ def Gauss (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_dema
         P_i.append (P_generada.values[i] - P_demanda.values[i])
         Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
 
-    P_i = np.round (P_i)
-    Q_i = np.round (Q_i)
-    Q_demanda = np.round (Q_demanda)
-    P_demanda = np.round (P_demanda)
+    P_i = np.round (P_i, 4)
+    Q_i = np.round (Q_i, 4)
+    Q_demanda = np.round (Q_demanda,4)
+    P_demanda = np.round (P_demanda,4)
 
     P_i = pd.DataFrame (P_i)
     Q_i = pd.DataFrame (Q_i)
@@ -106,17 +105,16 @@ def Sflow_GS (writer, Pij_GS, Qij_GS, Pji_GS, Qji_GS, P_loss_GS, Q_loss_GS, ID_l
 
     return
 
-def NR (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda, Q_demanda, Iteracion_GS, Error_GS):
+def NR (writer, ID_Barras, Fasores_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_demanda, Q_demanda, Iteracion_NR, Error_NR):
     
     # =============================================== Transformamos los datos para Gauss Saidel ===========================================================
     # Convertimos los resultados en un dataframe de pandas.
-    Resultados_GS = pd.DataFrame (Fasores_GS)
-    Resultados_GS = np.round (Resultados_GS, 4)
-    angulos_grados_GS = pd.DataFrame (Angulos_GS)
-    angulos_grados_GS = np.round (angulos_grados_GS, 4)
-    P_generada = pd.DataFrame (P_gen_GS)
-    Q_generada = pd.DataFrame (Q_gen_GS)
-    Q_demanda = Q_demanda.apply(lambda x: x.imag)
+    Resultados_NR = pd.DataFrame (Fasores_NR)
+    Resultados_NR = np.round (Resultados_NR, 4)
+    angulos_grados_NR = pd.DataFrame (Angulos_NR)
+    angulos_grados_NR = np.round (angulos_grados_NR, 4)
+    P_generada = pd.DataFrame (P_gen_NR)
+    Q_generada = pd.DataFrame (Q_gen_NR)
     P_i = [] # Lista para almacenar la potencia generada menos la demanda
     Q_i = [] # Lista para almacenar la potencia generada menos la demanda
 
@@ -124,10 +122,10 @@ def NR (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda
         P_i.append (P_generada.values[i] - P_demanda.values[i])
         Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
 
-    P_i = np.round (P_i)
-    Q_i = np.round (Q_i)
-    Q_demanda = np.round (Q_demanda)
-    P_demanda = np.round (P_demanda)
+    P_i = np.round (P_i, 4)
+    Q_i = np.round (Q_i, 4)
+    Q_demanda = np.round (Q_demanda,4)
+    P_demanda = np.round (P_demanda, 4)
 
     P_i = pd.DataFrame (P_i)
     Q_i = pd.DataFrame (Q_i)
@@ -136,8 +134,8 @@ def NR (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda
     ID_Barras = pd.DataFrame (ID_Barras)
 
     ID_Barras.to_excel(writer, sheet_name='RESULTS NR', header= ['Bus i'], index=False, startrow=1, startcol=0)
-    Resultados_GS.to_excel(writer, sheet_name='RESULTS NR', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
-    angulos_grados_GS.to_excel(writer, sheet_name='RESULTS NR', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
+    Resultados_NR.to_excel(writer, sheet_name='RESULTS NR', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
+    angulos_grados_NR.to_excel(writer, sheet_name='RESULTS NR', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
     P_generada.to_excel(writer, sheet_name='RESULTS NR', header= ['Pgen (pu)'], index=False, startrow=1, startcol=5)
     Q_generada.to_excel(writer, sheet_name='RESULTS NR', header= ['Qgen (pu)'], index=False, startrow=1, startcol=6)
     P_demanda.to_excel(writer, sheet_name='RESULTS NR', header= ['Pload (pu)'], index=False, startrow=1, startcol=7)
@@ -148,9 +146,9 @@ def NR (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda
     # Escribir los datos en la hoja 'RESULTS NR'
     worksheet = writer.sheets['RESULTS NR']
     worksheet.write(0, 0, 'Iteraciones')
-    worksheet.write(0, 1, Iteracion_GS)
+    worksheet.write(0, 1, Iteracion_NR)
     worksheet.write(0, 2, 'Error')
-    worksheet.write(0, 3, Error_GS)
+    worksheet.write(0, 3, Error_NR)
     
     return 
 
@@ -198,5 +196,87 @@ def Lineal (writer, DC, Angulos_Lineales, Bus_i_Barras):
     # ================================================ Escribimos los resultados del metodo lineal ====================================================
     Bus_i_Barras.to_excel(writer, sheet_name='RESULTS DC', header= ['Bus i'], index=False, startcol=0)
     Angulos_Lineales.to_excel(writer, sheet_name='RESULTS DC', header= ['<V (degree)'], index=False, startcol=1)
+    
+    return
+
+def FD (writer, ID_Barras, Fasores_FD, Angulos_FD, P_gen_FD, Q_gen_FD, P_demanda, Q_demanda, Iteracion_FD, Error_FD):
+    
+    # =============================================== Transformamos los datos para Gauss Saidel ===========================================================
+    # Convertimos los resultados en un dataframe de pandas.
+    Resultados_FD = pd.DataFrame (Fasores_FD)
+    Resultados_FD = np.round (Resultados_FD, 4)
+    angulos_grados_FD = pd.DataFrame (Angulos_FD)
+    angulos_grados_FD = np.round (angulos_grados_FD, 4)
+    P_generada = pd.DataFrame (P_gen_FD)
+    Q_generada = pd.DataFrame (Q_gen_FD)
+    P_i = [] # Lista para almacenar la potencia generada menos la demanda
+    Q_i = [] # Lista para almacenar la potencia generada menos la demanda
+
+    for i in range(len(P_generada)): 
+        P_i.append (P_generada.values[i] - P_demanda.values[i])
+        Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
+
+    P_i = np.round (P_i, 4)
+    Q_i = np.round (Q_i, 4)
+    Q_demanda = np.round (Q_demanda, 4)
+    P_demanda = np.round (P_demanda,4)
+
+    P_i = pd.DataFrame (P_i)
+    Q_i = pd.DataFrame (Q_i)
+    Q_demanda = pd.DataFrame (Q_demanda)
+    P_demanda = pd.DataFrame (P_demanda)
+    ID_Barras = pd.DataFrame (ID_Barras)
+
+    ID_Barras.to_excel(writer, sheet_name='RESULTS FD', header= ['Bus i'], index=False, startrow=1, startcol=0)
+    Resultados_FD.to_excel(writer, sheet_name='RESULTS FD', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
+    angulos_grados_FD.to_excel(writer, sheet_name='RESULTS FD', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
+    P_generada.to_excel(writer, sheet_name='RESULTS FD', header= ['Pgen (pu)'], index=False, startrow=1, startcol=5)
+    Q_generada.to_excel(writer, sheet_name='RESULTS FD', header= ['Qgen (pu)'], index=False, startrow=1, startcol=6)
+    P_demanda.to_excel(writer, sheet_name='RESULTS FD', header= ['Pload (pu)'], index=False, startrow=1, startcol=7)
+    Q_demanda.to_excel(writer, sheet_name='RESULTS FD', header= ['Qload (pu)'], index=False, startrow=1, startcol=8)
+    P_i.to_excel(writer, sheet_name='RESULTS FD', header= ['Pi (pu)'], index=False, startrow=1, startcol=3)
+    Q_i.to_excel(writer, sheet_name='RESULTS FD', header= ['Qi (pu)'], index=False, startrow=1, startcol=4)
+    
+    # Escribir los datos en la hoja 'RESULTS FD'
+    worksheet = writer.sheets['RESULTS FD']
+    worksheet.write(0, 0, 'Iteraciones')
+    worksheet.write(0, 1, Iteracion_FD)
+    worksheet.write(0, 2, 'Error')
+    worksheet.write(0, 3, Error_FD)
+    
+    return 
+
+def Sflow_FD (writer, Pij_FD, Qij_FD, Pji_FD, Qji_FD, P_loss_FD, Q_loss_FD, ID_lineas, Bus_i_lineas, Bus_j_lineas, SF_FD):
+    
+    # Extrayendo la parte real de cada elemento en la lista
+    P_ij_FD = Pij_FD
+    Q_ij_FD = Qij_FD
+    P_ji_FD = Pji_FD
+    Q_ji_FD = Qji_FD
+    
+    # =============================================== Transformamos los datos ===========================================================
+    ID_Lineas = pd.DataFrame (ID_lineas, columns=['Ident.'])
+    Barra_i = pd.DataFrame (Bus_i_lineas, columns=['Bus i'])
+    Barra_j = pd.DataFrame (Bus_j_lineas, columns=['Bus j '])
+    P_ij_FD = pd.DataFrame (P_ij_FD, columns=['P_ij (pu)'])
+    Q_ij_FD = pd.DataFrame (Q_ij_FD, columns=['Q_ij (pu)'])
+    P_ji_FD = pd.DataFrame (P_ji_FD, columns=['P_ji (pu)'])
+    Q_ji_FD = pd.DataFrame (Q_ji_FD, columns=['Q_ji (pu)'])
+    Perdidas_P_FD = pd.DataFrame (P_loss_FD, columns=['Ploss (pu)'])
+    Perdidas_Q_FD = pd.DataFrame (Q_loss_FD, columns=['Qloss (pu)'])
+    
+    # =============================================== Escribimos los resultados del flujo de potencia ===================================================
+    ID_Lineas.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Ident.', index=False, startrow=0, startcol=0)
+    Barra_i.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Bus i', index=False, startrow=0, startcol=1)
+    Barra_j.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Bus j', index=False, startrow=0, startcol=2)
+    P_ij_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'P_ij', index=False, startrow=0, startcol=3)
+    Q_ij_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Q_ij', index=False, startrow=0, startcol=4)
+    P_ji_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'P_ji', index=False, startrow=0, startcol=5)
+    Q_ji_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Q_ji', index=False, startrow=0, startcol=6)
+    Perdidas_P_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Ploss', index=False, startrow=0, startcol=7)
+    Perdidas_Q_FD.to_excel(writer, sheet_name='POWER FLOW FD', header= 'Qloss', index=False, startrow=0, startcol=8)
+
+    SF_FD.to_excel(writer, sheet_name='POWER FLOW FD', index=False)
+    
     
     return
