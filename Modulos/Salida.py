@@ -28,21 +28,25 @@ def Gauss (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_dema
     P_i = [] # Lista para almacenar la potencia generada menos la demanda
     Q_i = [] # Lista para almacenar la potencia generada menos la demanda
 
+    # Agregamos los valores a las listas.
     for i in range(len(P_generada)): 
         P_i.append (P_generada.values[i] - P_demanda.values[i])
         Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
 
+    # Aproximamos nuestros resultados.
     P_i = np.round (P_i, 4)
     Q_i = np.round (Q_i, 4)
     Q_demanda = np.round (Q_demanda,4)
     P_demanda = np.round (P_demanda,4)
 
+    # Convertimos las vairables a un dataframe de pandas.
     P_i = pd.DataFrame (P_i)
     Q_i = pd.DataFrame (Q_i)
     Q_demanda = pd.DataFrame (Q_demanda)
     P_demanda = pd.DataFrame (P_demanda)
     ID_Barras = pd.DataFrame (ID_Barras)
 
+    # Enviamos a Exel los resultados.
     ID_Barras.to_excel(writer, sheet_name='RESULTS GS', header= ['Bus i'], index=False, startrow=1, startcol=0)
     Resultados_GS.to_excel(writer, sheet_name='RESULTS GS', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
     angulos_grados_GS.to_excel(writer, sheet_name='RESULTS GS', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
@@ -52,7 +56,8 @@ def Gauss (writer, ID_Barras, Fasores_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_dema
     Q_demanda.to_excel(writer, sheet_name='RESULTS GS', header= ['Qload (pu)'], index=False, startrow=1, startcol=8)
     P_i.to_excel(writer, sheet_name='RESULTS GS', header= ['Pi (pu)'], index=False, startrow=1, startcol=3)
     Q_i.to_excel(writer, sheet_name='RESULTS GS', header= ['Qi (pu)'], index=False, startrow=1, startcol=4)
-    # Escribir los datos en la hoja 'RESULTS GS'
+    
+    # Escribimos los datos en la hoja 'RESULTS GS' en posiciones especificas.
     worksheet = writer.sheets['RESULTS GS']
     worksheet.write(0, 0, 'Iteraciones')
     worksheet.write(0, 1, Iteracion_GS)
@@ -71,7 +76,7 @@ def Sflow_GS (writer, Pij_GS, Qij_GS, Pji_GS, Qji_GS, P_loss_GS, Q_loss_GS, ID_l
     P_ji_GS = Pji_GS
     Q_ji_GS = Qji_GS
     
-    
+    # Aproximamos los resultados.
     P_ij_GS = np.round (P_ij_GS, 4)
     Q_ji_GS = np.round (Q_ji_GS, 4)
     P_ji_GS = np.round (P_ji_GS, 4)
@@ -118,21 +123,25 @@ def NR (writer, ID_Barras, Fasores_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_demanda
     P_i = [] # Lista para almacenar la potencia generada menos la demanda
     Q_i = [] # Lista para almacenar la potencia generada menos la demanda
 
+    # Agregamos los valores a las listas.
     for i in range(len(P_generada)): 
         P_i.append (P_generada.values[i] - P_demanda.values[i])
         Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
 
+    # Aproximamos nuestros resultados.
     P_i = np.round (P_i, 4)
     Q_i = np.round (Q_i, 4)
     Q_demanda = np.round (Q_demanda,4)
     P_demanda = np.round (P_demanda, 4)
 
+    # Convertimos las vairables a un dataframe de pandas.
     P_i = pd.DataFrame (P_i)
     Q_i = pd.DataFrame (Q_i)
     Q_demanda = pd.DataFrame (Q_demanda)
     P_demanda = pd.DataFrame (P_demanda)
     ID_Barras = pd.DataFrame (ID_Barras)
-
+    
+    # Enviamos a Exel los resultados.
     ID_Barras.to_excel(writer, sheet_name='RESULTS NR', header= ['Bus i'], index=False, startrow=1, startcol=0)
     Resultados_NR.to_excel(writer, sheet_name='RESULTS NR', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
     angulos_grados_NR.to_excel(writer, sheet_name='RESULTS NR', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
@@ -143,7 +152,7 @@ def NR (writer, ID_Barras, Fasores_NR, Angulos_NR, P_gen_NR, Q_gen_NR, P_demanda
     P_i.to_excel(writer, sheet_name='RESULTS NR', header= ['Pi (pu)'], index=False, startrow=1, startcol=3)
     Q_i.to_excel(writer, sheet_name='RESULTS NR', header= ['Qi (pu)'], index=False, startrow=1, startcol=4)
     
-    # Escribir los datos en la hoja 'RESULTS NR'
+    # Escribimos los datos en la hoja 'RESULTS GS' en posiciones especificas.
     worksheet = writer.sheets['RESULTS NR']
     worksheet.write(0, 0, 'Iteraciones')
     worksheet.write(0, 1, Iteracion_NR)
@@ -211,22 +220,26 @@ def FD (writer, ID_Barras, Fasores_FD, Angulos_FD, P_gen_FD, Q_gen_FD, P_demanda
     Q_generada = pd.DataFrame (Q_gen_FD)
     P_i = [] # Lista para almacenar la potencia generada menos la demanda
     Q_i = [] # Lista para almacenar la potencia generada menos la demanda
-
+    
+    # Agregamos los valores a las listas.
     for i in range(len(P_generada)): 
         P_i.append (P_generada.values[i] - P_demanda.values[i])
         Q_i.append (Q_generada.values[i] - Q_demanda.values[i])
 
+    # Aproximamos nuestros resultados.
     P_i = np.round (P_i, 4)
     Q_i = np.round (Q_i, 4)
     Q_demanda = np.round (Q_demanda, 4)
     P_demanda = np.round (P_demanda,4)
 
+    # Convertimos las vairables a un dataframe de pandas.
     P_i = pd.DataFrame (P_i)
     Q_i = pd.DataFrame (Q_i)
     Q_demanda = pd.DataFrame (Q_demanda)
     P_demanda = pd.DataFrame (P_demanda)
     ID_Barras = pd.DataFrame (ID_Barras)
-
+    
+    # Enviamos a Exel los resultados.
     ID_Barras.to_excel(writer, sheet_name='RESULTS FD', header= ['Bus i'], index=False, startrow=1, startcol=0)
     Resultados_FD.to_excel(writer, sheet_name='RESULTS FD', header= ['|V| (pu)'], index=False, startrow=1, startcol=1)
     angulos_grados_FD.to_excel(writer, sheet_name='RESULTS FD', header= ['<V (degree)>'], index=False, startrow=1, startcol=2)
@@ -237,7 +250,7 @@ def FD (writer, ID_Barras, Fasores_FD, Angulos_FD, P_gen_FD, Q_gen_FD, P_demanda
     P_i.to_excel(writer, sheet_name='RESULTS FD', header= ['Pi (pu)'], index=False, startrow=1, startcol=3)
     Q_i.to_excel(writer, sheet_name='RESULTS FD', header= ['Qi (pu)'], index=False, startrow=1, startcol=4)
     
-    # Escribir los datos en la hoja 'RESULTS FD'
+    # Escribimos los datos en la hoja 'RESULTS GS' en posiciones especificas.
     worksheet = writer.sheets['RESULTS FD']
     worksheet.write(0, 0, 'Iteraciones')
     worksheet.write(0, 1, Iteracion_FD)
