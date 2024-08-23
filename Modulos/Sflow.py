@@ -4,20 +4,22 @@ import pandas as pd
 
 def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_TRX, ID_trx, Tap_trx, Fasores_GS, Conex_lineas, SeriesTRX):
 
+    # Creamos arrays vacios para almacenar los potencias según el tipo de elementos que tennemos.
     Potencia_Sij = np.array([]); Potencia_Sji = np.array([]); Potencia_Sij2 = np.array([]); Potencia_Sji2 = np.array([])
     
-
-
+    # Creamos una lista con los indices i y j de las conexiones de las lineas y los transformadores.
     Indice_Line = list (zip (Bus_i_lineas, Bus_j_lineas))
     Indice_TRX = list (zip (Barrai_TRX, Barraj_TRX))
 
+    # Convertimos las listas en arrays.
     Bus_i_linea = list (Bus_i_lineas)
     Bus_j_linea = list (Bus_j_lineas)
     Bus_i_TRX = list (Barrai_TRX)
     Bus_j_TRX = list (Barraj_TRX)
     ID_linea = list (ID_lineas)
     ID_trxS = list (ID_trx)
-
+    
+    # Picamos las subceptancias de las lineas la mitad para i y j.
     for posicion, nexos in enumerate (Indice_Line):
         
         i = nexos [0] - 1

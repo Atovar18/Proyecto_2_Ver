@@ -1,6 +1,8 @@
 import numpy as np
 
 def Potencia_entregada (Bus_type, Fasores_GS, Y_Bus): 
+    
+    # Creamos una lista de 0's compleja para guardar los resultados.
     Potencia_S = np.zeros(len(Bus_type), complex)
     for i in range (len(Bus_type)):
         

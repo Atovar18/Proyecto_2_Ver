@@ -3,7 +3,10 @@ import time
 from Modulos import Carga_Zip
 
 def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter, Z_zip, I_zip, P_zip):
+    
+    # Inicializamos el tiempo de ejecucion.
     Inicio = time.time()
+    
     # Creamos copias de los datos para no afectar las variables.
     P_gen2 = P_gen.copy()
     Q_gen2 = Q_gen.copy()
@@ -22,12 +25,16 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
     V_salida = Fasor_V.copy()
 
     for _ in range (Max_iter):
-        Indice += 1
-        # Calculamos los valores de las tensiones.
         
+        # Control de las iteraciones.
+        Indice += 1
+        
+        # Calculamos los valores de las tensiones.
         for i in range (len(Y_Bus)):
             
             if Bus_type[i] == 'SL':
+                
+                # Sustituimos el valor de la tensión de la barra SL.
                 V_salida [i] = V_salida[i]
             
             
@@ -83,20 +90,26 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
             break  
         
         else:
+            # Actualizamos los valores de las tensiones.
             Fasor_V = V_salida.copy()
             Modulos = abs (V_salida)
+            
+            # Calculamos la nueva potencia especifica y demandada según el modelado Zip.
             P_especifica, Q_especifica, P_demanda2, Q_demanda2 = Carga_Zip.Cargas_Variables(P_demanda2, Q_demanda2, P_gen2, Q_gen2, Modulos, Z_zip, I_zip, P_zip)
         
+        # Actualizamos los valores de las potencias.
         P_return = P_demanda2
         Q_return = Q_demanda2
 
-        
+        # Condición de ruptura.
         if Indice == Max_iter:
             break
         
     # Definimos la listas para almacenar los valores de los modulos y los angulos.
     Modulos_GS = []
     Angulos_GS = []    
+    
+    # Bucle para sustituir los valores de los fasores.
     for i in V_salida:
         modulo = abs(i)
         modulo = round(modulo, 4)
@@ -105,8 +118,10 @@ def Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_a
         Modulos_GS.append(modulo)
         Angulos_GS.append(angulo)
 
+    # Almacenamos los valores de los fasores.
     Fasores_GS = V_salida
 
+    # Finalizamos el tiempo de ejecución.
     Final = time.time()
     tiempo_transcurrido = Final - Inicio
     print (f"El tiempo de ejecucion en GS fue de {tiempo_transcurrido:.3f} segundos.")

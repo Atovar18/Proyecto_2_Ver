@@ -282,6 +282,8 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
         pass
 
     else:
+        # --------------------- Creamos listas vacias para las conexiones a tierra. -------------------------------------
+        # Una general y otra por cada tipo de elemento que tenga conexiones a tierra.
         Conex_Tierra = np.zeros(int(Tomas_a_tierra), dtype = complex)
         Conex_Tierra_1 = np.zeros(int(Tomas_a_tierra), dtype = complex)
         Conex_Tierra_2 = np.zeros(int(Tomas_a_tierra), dtype = complex)
