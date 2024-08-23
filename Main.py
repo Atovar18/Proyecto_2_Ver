@@ -7,14 +7,9 @@ from Modulos import Newton_Rapson
 from Modulos import Salida
 from Modulos import Lineal
 from Modulos import Desacoplado
-import numpy as np
 import pandas as pd
-import itertools
 import time 
-import math as mt
 import os
-import numpy as np
-import sympy as sp
 
 
 
