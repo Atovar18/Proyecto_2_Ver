@@ -22,34 +22,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     Barra_j = Barra_j.reset_index(drop=True)
     Shunt_i = Shunt_i.reset_index(drop=True)
     trx_i = trx_i.reset_index(drop=True)
-    trx_j = trx_j.reset_index(drop=True)    
-    
-    # ------------------------ Debemos eliminar elementos en paralelo, ahora con las lineas. ----------------------------
-    
-    # Convertimos los datos a listas.
-    Barra_i = pd.Series(Barra_i)
-    Barra_j = pd.Series(Barra_j)
-    B_lineas = pd.Series(B_lineas)
-    Z_lineas = pd.Series(Z_lineas)
-    
-    # Crear un DataFrame con los datos
-    df_lineas = pd.DataFrame({'Barra_i': Barra_i, 'Barra_j': Barra_j, 'B_lineas': B_lineas, 'Z_lineas': Z_lineas})
-    
-    # Bucle para comparar y sumar
-    i = 0
-    while i < len(df_lineas) - 1:
-        if df_lineas.loc[i, 'Barra_i'] == df_lineas.loc[i + 1, 'Barra_i'] and df_lineas.loc[i, 'Barra_j'] == df_lineas.loc[i + 1, 'Barra_j']:
-            df_lineas.loc[i, 'B_lineas'] += df_lineas.loc[i + 1, 'B_lineas']
-            df_lineas.loc[i, 'Z_lineas'] += df_lineas.loc[i + 1, 'Z_lineas']
-            df_lineas = df_lineas.drop(i + 1).reset_index(drop=True)
-        else:
-            i += 1
-            
-    # Separar los datos en variables individuales
-    Bus_i_lineas = df_lineas['Barra_i']
-    Bus_j_lineas = df_lineas['Barra_j']
-    B_lineas = df_lineas['B_lineas']
-    Z_lineas = df_lineas['Z_lineas']
+    trx_j = trx_j.reset_index(drop=True)        
     
     # ============================================================================ SECCION LINEAS ==========================================================================================================
 
@@ -82,24 +55,6 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     Salida_TRX = pd.Series(trx_i)
     Llegada_TRX = pd.Series(trx_j)
     Y_trx = pd.Series(Y_trx)
-
-    # Crear un DataFrame con los datos
-    df = pd.DataFrame({'Salida_TRX': Salida_TRX, 'Llegada_TRX': Llegada_TRX, 'Y_trx': Y_trx, 'Tap_trx': Tap_trx})
-
-    # Bucle para comparar y sumar
-    i = 0
-    while i < len(df) - 1:
-        if df.loc[i, 'Salida_TRX'] == df.loc[i + 1, 'Salida_TRX'] and df.loc[i, 'Llegada_TRX'] == df.loc[i + 1, 'Llegada_TRX']:
-            df.loc[i, 'Y_trx'] += df.loc[i + 1, 'Y_trx']
-            df = df.drop(i + 1).reset_index(drop=True)
-        else:
-            i += 1
-            
-    # Separar los datos en variables individuales 
-    Bus_i_trx = df['Salida_TRX'] 
-    Bus_j_trx = df['Llegada_TRX'] 
-    Y_trx = df['Y_trx'] 
-    Tap_trx = df['Tap_trx']
     
     # Definimos listas a TRX.
     SeriesTRX = []
@@ -115,15 +70,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     # Bucle para sumar las series de los TRX con el tap sin importar el paralelo.
     for i in range (len(TRX_Y)):
         Muestra = TAP [i]*TRX_Y[i]
-        Repeat.append (Muestra)
-        
-    # Tomamos los valores no repetidos de las barras i y j para conocer su posición.
-    Bus_i_TRX_T = list(set(Bus_i_trx))
-    Bus_j_TRX_T = list(set(Bus_j_trx)) 
-        
-    # Crea una nueva lista sin los elementos donde Tap_trx tiene un valor de 1
-    Bus_i_TRX_p = [elemento for elemento, tap in zip(Bus_i_trx, Tap_trx) if tap != 1.00000000] 
-    Bus_j_TRX_p = [elemento for elemento, tap in zip(Bus_j_trx, Tap_trx) if tap != 1.00000000]       
+        Repeat.append (Muestra)       
 
     # Bucle para agregar las conexiones de TRX a Barra_i y Barra_j, si aplica.    
     for i in range (len(Y_trx)): 
@@ -199,7 +146,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         Conexiones_a_Tierra = len(Conex) 
         Tomas_a_tierra = Conexiones_a_Tierra
         elementos_a_tierra = lineas
-            
+        
     # Calculamos las admitancias de las lineas.
     Y_linea = np.reciprocal (Z_lineas)
     Conex_lineas = Y_linea
@@ -228,7 +175,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         tupa = int(Barra_j[i])
         Barra_j[i] = tupa
         
-    # Ordenamos los valores. 
+    # Ordenamos los valores.     
     # Paso 1: Crear lista de tuplas
     lista_combinada = list(zip(Barra_i, Barra_j, Y_linea, ID_lineas))
 
@@ -247,30 +194,23 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     # Convertimos los valores finales a listas.
     Barra_i_conex = list(Barra_i_conex)
     Barra_j_conex = list(Barra_j_conex)
+    
+    # Crear un DataFrame con los datos
+    df = pd.DataFrame({'Barra_i_conex': Barra_i_conex, 'Barra_j_conex': Barra_j_conex, 'Y_Linea': Y_linea})
 
-    # Buscamos eliminar los valores repetidos.
-    def eliminar_pares_duplicados_consecutivos(i, j):
-            # Asegurarse de que las listas tienen la misma longitud
-            if len(i) != len(j):
-                return i, j 
-
-            indice = 0
-            # Usar un bucle while porque la longitud de las listas cambiará durante la iteración
-            while indice < len(i) - 1:
-                # Verificar si hay elementos consecutivos iguales en i
-                if i[indice] == i[indice + 1]:
-                    # Verificar si los elementos correspondientes en j también son iguales
-                    if j[indice] == j[indice + 1]:
-                        # Eliminar uno de los elementos duplicados de ambas listas
-                        del i[indice + 1]
-                        del j[indice + 1]
-                        # No incrementar el índice para revisar nuevamente desde la misma posición
-                        continue
-                indice += 1
-            return i, j
-
-    # Obtenemos los nuevos indices sin valores repetidos.
-    Barra_i_conex_n, Barra_j_conex_n = eliminar_pares_duplicados_consecutivos(Barra_i_conex, Barra_j_conex)
+    # Bucle para comparar y sumar
+    i = 0
+    while i < len(df) - 1:
+        if df.loc[i, 'Barra_i_conex'] == df.loc[i + 1, 'Barra_i_conex'] and df.loc[i, 'Barra_j_conex'] == df.loc[i + 1, 'Barra_j_conex']:
+            df.loc[i, 'Y_Linea'] += df.loc[i + 1, 'Y_Linea']
+            df = df.drop(i + 1).reset_index(drop=True)
+        else:
+            i += 1
+            
+    # Separar los datos en variables individuales 
+    Barra_i_conex_n = df['Barra_i_conex'] 
+    Barra_j_conex_n = df['Barra_j_conex'] 
+    Y_linea = df['Y_Linea'] 
 
     # ======================================== Llenamos la matriz según las conexiones. ========================================== 
     # Encuentra el valor máximo entre ambas listas.

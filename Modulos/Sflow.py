@@ -138,12 +138,6 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
         # Guardamos los valores.
         Potencia_Sji2 = np.append (Potencia_Sji2, ji)
         
-    print (Potencia_Sij2)
-    print ()
-    print (Potencia_Sji2)
-    print ()
-    exit()
-        
     # Separación de los valores de las potencias.
 
     # i -> j.
