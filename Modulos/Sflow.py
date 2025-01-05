@@ -37,12 +37,19 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
             Y_linea_tierra = 0 
             
         
-        # Crear la matriz Matriz_prueba 
-        Matriz_prueba = pd.DataFrame({ 'Bus_i_lineas': Bus_i_linea, 'Bus_j_lineas': Bus_j_linea, 'Conex_lineas': Conex_lineas, 'Y_linea_tierra':Y_linea_tierra})
+        # Crear la matriz Matriz_Linea 
+        Matriz_Linea = pd.DataFrame({ 'Bus_i_lineas': Bus_i_linea, 'Bus_j_lineas': Bus_j_linea, 'Conex_lineas': Conex_lineas, 'Y_linea_tierra':Y_linea_tierra})
+        Matriz_Trx = pd.DataFrame({ 'Bus_i_TRX': Bus_i_TRX, 'Bus_j_TRX': Bus_j_TRX, 'SeriesTRX': SeriesTRX})
         Zp_linea = None
+        Zx_trx = None
         
+        
+        """El bucle for se encarga de leer el bus i y bus j, para calcular el flujo de potencia, pero para elementos en 
+        paralelo, compara el la columna de Bus_i y lo compara con el indice i donde se encuentra el elemento conectado, 
+        igual con la bus j, una vez ubicados los elementos iguales, se extrae la impedancia asociada al elemento para 
+        calcular el flujo de potencia."""
         # Comparar i con la primera columna y j con la segunda columna 
-        for index, row in Matriz_prueba.iterrows():           
+        for index, row in Matriz_Linea.iterrows():           
             if int(row['Bus_i_lineas'].real - 1) == i and int(row['Bus_j_lineas'].real-1) == j: 
                 Zp_linea = row['Conex_lineas']
                 break
@@ -94,9 +101,16 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
         #                                                                              Flujo de potencia i -> j.
         # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
         
+        # Comparar i con la primera columna y j con la segunda columna        
+        for index, row in Matriz_Trx.iterrows():           
+            if int(row['Bus_i_TRX'].real - 1) == i and int(row['Bus_j_TRX'].real-1) == j: 
+                Zx_trx = row['SeriesTRX']
+                break
+    
+            
         # Calculamos los terminos.
-        Termino1 = (abs (Fasores_GS [i]) ** 2)*np.conjugate(SeriesTRX [posicion])
-        Termino2 = np.conjugate (Tap_trx[posicion])*(Fasores_GS [i])*(np.conjugate(Fasores_GS [j]))*np.conjugate(SeriesTRX [posicion])
+        Termino1 = (abs (Fasores_GS [i]) ** 2)*np.conjugate(Zx_trx)
+        Termino2 = np.conjugate (Tap_trx[posicion])*(Fasores_GS [i])*(np.conjugate(Fasores_GS [j]))*np.conjugate(Zx_trx)
         
         # Flujo i -> j.
         ij = Termino1 - Termino2
@@ -123,6 +137,12 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
         
         # Guardamos los valores.
         Potencia_Sji2 = np.append (Potencia_Sji2, ji)
+        
+    print (Potencia_Sij2)
+    print ()
+    print (Potencia_Sji2)
+    print ()
+    exit()
         
     # Separación de los valores de las potencias.
 
