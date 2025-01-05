@@ -35,6 +35,17 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
                 Y_linea_tierra = X_linea_tierra
         else: 
             Y_linea_tierra = 0 
+            
+        
+        # Crear la matriz Matriz_prueba 
+        Matriz_prueba = pd.DataFrame({ 'Bus_i_lineas': Bus_i_linea, 'Bus_j_lineas': Bus_j_linea, 'Conex_lineas': Conex_lineas, 'Y_linea_tierra':Y_linea_tierra})
+        Zp_linea = None
+        
+        # Comparar i con la primera columna y j con la segunda columna 
+        for index, row in Matriz_prueba.iterrows():           
+            if int(row['Bus_i_lineas'].real - 1) == i and int(row['Bus_j_lineas'].real-1) == j: 
+                Zp_linea = row['Conex_lineas']
+                break
         
         # ******************************************************************************************************************************************************************************************************************************************************************************************************************************************************
         #                                                                              Flujo de potencia i -> j.
@@ -42,7 +53,7 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
         
         # Calculamos los terminos.
         Termino_tierra = (abs (Fasores_GS [i]) ** 2) * np.conjugate(Y_linea_tierra)
-        Termino_conex_linea = Fasores_GS [i]*(np.conjugate((Fasores_GS[i] - Fasores_GS[j]) * Conex_lineas [i]))
+        Termino_conex_linea = Fasores_GS [i]*(np.conjugate((Fasores_GS[i] - Fasores_GS[j]) * Zp_linea))
 
         # Flujo i -> j.
         ij = Termino_tierra + Termino_conex_linea
@@ -59,7 +70,7 @@ def Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_
         
         # Calculamos los terminos.
         Termino_tierra_2 = (abs (Fasores_GS [j]) ** 2) * np.conjugate(Y_linea_tierra)
-        Termino_conex_linea_2 = Fasores_GS [j]*(np.conjugate((Fasores_GS[j] - Fasores_GS[i]) * Conex_lineas [i]))
+        Termino_conex_linea_2 = Fasores_GS [j]*(np.conjugate((Fasores_GS[j] - Fasores_GS[i]) * Zp_linea))
 
         # Flujo j -> i.
         ji = Termino_tierra_2 + Termino_conex_linea_2

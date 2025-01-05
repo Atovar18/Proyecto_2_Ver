@@ -4,7 +4,7 @@ import math
 
 # ============================================================================== Comenzamos la lectura de los datos ==========================================================================================
 # Ruta al archivo Excel
-ruta_archivo = 'Datos/Data_io.xlsx'
+ruta_archivo = 'Datos/Prueba.xlsx'
 
 # Cargar el archivo Excel
 archivo_excel = pd.ExcelFile(ruta_archivo)
@@ -214,6 +214,8 @@ def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus
         print ('Las conexiones no coinciden.')
         print ('Barras:',Max_Barra)
         print ('Elementos interconectados:',Valor_maximo) 
+        print ()
+        exit ()
     
     return
 

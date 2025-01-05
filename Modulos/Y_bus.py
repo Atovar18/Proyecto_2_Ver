@@ -22,7 +22,36 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     Barra_j = Barra_j.reset_index(drop=True)
     Shunt_i = Shunt_i.reset_index(drop=True)
     trx_i = trx_i.reset_index(drop=True)
-    trx_j = trx_j.reset_index(drop=True)
+    trx_j = trx_j.reset_index(drop=True)    
+    
+    # ------------------------ Debemos eliminar elementos en paralelo, ahora con las lineas. ----------------------------
+    
+    # Convertimos los datos a listas.
+    Barra_i = pd.Series(Barra_i)
+    Barra_j = pd.Series(Barra_j)
+    B_lineas = pd.Series(B_lineas)
+    Z_lineas = pd.Series(Z_lineas)
+    
+    # Crear un DataFrame con los datos
+    df_lineas = pd.DataFrame({'Barra_i': Barra_i, 'Barra_j': Barra_j, 'B_lineas': B_lineas, 'Z_lineas': Z_lineas})
+    
+    # Bucle para comparar y sumar
+    i = 0
+    while i < len(df_lineas) - 1:
+        if df_lineas.loc[i, 'Barra_i'] == df_lineas.loc[i + 1, 'Barra_i'] and df_lineas.loc[i, 'Barra_j'] == df_lineas.loc[i + 1, 'Barra_j']:
+            df_lineas.loc[i, 'B_lineas'] += df_lineas.loc[i + 1, 'B_lineas']
+            df_lineas.loc[i, 'Z_lineas'] += df_lineas.loc[i + 1, 'Z_lineas']
+            df_lineas = df_lineas.drop(i + 1).reset_index(drop=True)
+        else:
+            i += 1
+            
+    # Separar los datos en variables individuales
+    Bus_i_lineas = df_lineas['Barra_i']
+    Bus_j_lineas = df_lineas['Barra_j']
+    B_lineas = df_lineas['B_lineas']
+    Z_lineas = df_lineas['Z_lineas']
+    
+    # ============================================================================ SECCION LINEAS ==========================================================================================================
 
     # Listas temporales para almacenar los valores que no serán eliminados  
     temp_i_lineas = []
@@ -45,17 +74,48 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     # Comenzamos directos con las admitanicas.
     Y_trx = np.reciprocal (Xcc_trx*1j)
     Y_trx = Y_trx
+    TRX_Y = Y_trx.copy()
+    TAP = Tap_trx.copy()
+    
+    # ----------------------------- Debemos eliminar elementos en paralelo, ahora con los TRX. ----------------------------
+    # Convertimos los datos a listas.
+    Salida_TRX = pd.Series(trx_i)
+    Llegada_TRX = pd.Series(trx_j)
+    Y_trx = pd.Series(Y_trx)
+
+    # Crear un DataFrame con los datos
+    df = pd.DataFrame({'Salida_TRX': Salida_TRX, 'Llegada_TRX': Llegada_TRX, 'Y_trx': Y_trx, 'Tap_trx': Tap_trx})
+
+    # Bucle para comparar y sumar
+    i = 0
+    while i < len(df) - 1:
+        if df.loc[i, 'Salida_TRX'] == df.loc[i + 1, 'Salida_TRX'] and df.loc[i, 'Llegada_TRX'] == df.loc[i + 1, 'Llegada_TRX']:
+            df.loc[i, 'Y_trx'] += df.loc[i + 1, 'Y_trx']
+            df = df.drop(i + 1).reset_index(drop=True)
+        else:
+            i += 1
+            
+    # Separar los datos en variables individuales 
+    Bus_i_trx = df['Salida_TRX'] 
+    Bus_j_trx = df['Llegada_TRX'] 
+    Y_trx = df['Y_trx'] 
+    Tap_trx = df['Tap_trx']
     
     # Definimos listas a TRX.
     SeriesTRX = []
+    Repeat = []
     TRX_I =[]
     TRX_J = []
 
     # Bucle para sumar las series de los TRX sin importar el tap.
     for i in range (len(Y_trx)): 
-        
         Serie = Tap_trx [i]*Y_trx[i]
         SeriesTRX.append (Serie)
+        
+    # Bucle para sumar las series de los TRX con el tap sin importar el paralelo.
+    for i in range (len(TRX_Y)):
+        Muestra = TAP [i]*TRX_Y[i]
+        Repeat.append (Muestra)
         
     # Tomamos los valores no repetidos de las barras i y j para conocer su posición.
     Bus_i_TRX_T = list(set(Bus_i_trx))
@@ -250,7 +310,7 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         MatrizA[contador_trx, elemento - 1] = 1
         contador_trx+=1
 
-    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, SeriesTRX, Conex_lineas, ID_lineas
+    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, Repeat, Conex_lineas, ID_lineas
 
 def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, R_Shunt, X_Shunt, B_lineas, elementos_a_tierra_arr, Barra_tap, Tap_trx, Bus_i_trx, Bus_j_trx, Bus_i_shunt, Bus_i_lineas, Bus_j_lineas):
     
