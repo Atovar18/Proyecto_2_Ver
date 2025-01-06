@@ -38,10 +38,8 @@ def Potencia_entregada (Bus_type, Fasores_GS, Y_Bus):
                     termi4 += (np.conjugate(Fasores_GS[k]*Y_Bus [i,k]))
             
             Total = termi3 + (termi4*Fasores_GS[i])
-
             # Guardamos reusltados.
-            Imag = (np.imag(Total))*1j
-            Potencia_S [i] = Imag
+            Potencia_S [i] = Total
 
     # Aproximamos resultados para mejor interpretación. 
     Potencia_S = np.round (Potencia_S, 4)
