@@ -51,7 +51,37 @@ def BUS ():
     Z_zip = Barras.iloc[:, 10]
     I_zip = Barras.iloc[:, 11]
     P_zip = Barras.iloc[:, 12]
+    
+    # Creación de matriz para los generadores en paralelo. 
+    # Crear un DataFrame con los datos
+    df = pd.DataFrame({'ID_Barras': ID_Barras, 'Barra_i': Barra_i, 'Bus_type': Bus_type, 'V_pu': V_pu, 'V_ang': V_ang, 'P_gen': P_gen, 'Q_gen': Q_gen, 'P_load': P_load, 'Q_load': Q_load, 'Z_zip': Z_zip, 'I_zip': I_zip, 'P_zip': P_zip})
 
+    # Bucle para comparar y sumar
+    i = 0
+    while i < len(df) - 1:
+        if df.loc[i, 'Barra_i'] == df.loc[i + 1, 'Barra_i']:
+            df.loc[i, 'P_gen'] += df.loc[i + 1, 'P_gen']
+            df.loc[i, 'Q_gen'] += df.loc[i + 1, 'Q_gen']            
+            print ('Se cumplio en la fila:', i)
+            print ()
+            df = df.drop(i + 1).reset_index(drop=True)
+        else:
+            i += 1
+            
+    # Separar los datos en variables individuales 
+    ID_Barras = df['ID_Barras']
+    Barra_i = df['Barra_i']
+    Bus_type = df['Bus_type']
+    V_pu = df['V_pu']
+    V_ang = df['V_ang']
+    P_gen = df['P_gen']
+    Q_gen = df['Q_gen']
+    P_load = df['P_load']
+    Q_load = df['Q_load']
+    Z_zip = df['Z_zip']
+    I_zip = df['I_zip']
+    P_zip = df['P_zip']
+    
     # Copia de las variables originiales para no afectar los valores originales.
     Angulos_grados = V_ang.copy()
 
