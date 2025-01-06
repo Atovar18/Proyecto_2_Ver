@@ -125,6 +125,14 @@ def newtonRaphson(Convergencia, max_iter,y_bus,p_gen,p_load,q_gen,q_load,v_bar,b
         # Expresion de NR
         values_next = values_bf - Jacobian_eval*f_eval
         error = max(abs(values_next - values_bf))
+        
+        # Convertir values_next a un array de NumPy para la comparación 
+        values_next_np = np.array(values_next).astype(np.float64)
+        
+        # Verificar si algún valor en la matriz alcanza 1e+170 
+        if (values_next_np >= 1e+170).any(): 
+            print("Valor muy alto encontrado, rompiendo el bucle.") 
+            break
 
         # Actualizacion de variables
         #modulos de voltajes
