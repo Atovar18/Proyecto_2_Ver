@@ -3,7 +3,7 @@ import pandas as pd
 import itertools
 # ============================================================================= Creación de las matrices Y_rama. ========================================================================================================
 
-def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Bus_i_shunt, R_Shunt, X_Shunt, ID_lineas, ID_trx): 
+def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Bus_i_shunt, R_Shunt, X_Shunt, ID_lineas, ID_trx, Barra_tap): 
     # Seleccionamos las variables a trabajar. 
     Barras = Barra_i
     Barra_i = Bus_i_lineas
@@ -93,11 +93,48 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     Shunt_i = Bus_i_shunt.tolist() if isinstance(Bus_i_shunt, pd.Series) else Bus_i_shunt
     Bus_i_lineas = Bus_i_lineas.tolist() if isinstance(Bus_i_lineas, pd.Series) else Bus_i_lineas
     Bus_j_lineas = Bus_j_lineas.tolist() if isinstance(Bus_j_lineas, pd.Series) else Bus_j_lineas
+    
+    # Bucle para colocar el tap en la barra en el bus i.
+    df2 = pd.DataFrame({'Bus_i_trx': Bus_i_trx,'Bus_j_trx': Bus_j_trx, 'TRX_I': TRX_I, 'TRX_J': TRX_J, 'Barra_tap': Barra_tap})
+
+    i = 0
+    while i < len(df2) - 1:
+        if df2.loc [i, 'Bus_i_trx'] != df2.loc [i, 'Barra_tap']:
+            Bus_j_n = df2.loc [i, 'Bus_i_trx'] 
+            Bus_i_n = df2.loc [i, 'Barra_tap']
+            Cambio_i = df2.loc [i, 'TRX_I']
+            Cambio_j = df2.loc [i, 'TRX_J']
+            df2.loc [i, 'TRX_I'] = Cambio_j
+            df2.loc [i, 'TRX_J'] = Cambio_i
+            df2.loc [i, 'Bus_i_trx'] = Bus_i_n
+            df2.loc [i, 'Bus_j_trx'] = Bus_j_n
+        
+        i += 1  
+    
+    # Crear un DataFrame con los datos
+    df3 = pd.DataFrame({'Bus_i_trx': Bus_i_trx,'Bus_j_trx': Bus_j_trx, 'TRX_I': TRX_I, 'TRX_J': TRX_J, 'Tap_trx': Tap_trx})
+
+    # Bucle para comparar y sumar
+    i = 0
+    while i < len(df3) - 1:
+        if df3.loc[i, 'Bus_i_trx'] == df3.loc[i + 1, 'Bus_i_trx'] and df3.loc[i, 'Bus_j_trx'] == df3.loc[i + 1, 'Bus_j_trx']:
+            df3.loc[i, 'TRX_I'] += df3.loc[i + 1, 'TRX_I']
+            df3.loc[i, 'TRX_J'] += df3.loc[i + 1, 'TRX_J']
+            df3 = df3.drop(i + 1).reset_index(drop=True)
+        else:
+            i += 1
+    
+    # Separar los datos en variables individuales        
+    Bus_i_trx_tierra = df3['Bus_i_trx'] 
+    Bus_j_trx_tierra = df3['Bus_j_trx'] 
+    TRX_I = df3 ['TRX_I']
+    TRX_J = df3 ['TRX_J']
+    Tap_trx_tierra = df3 ['Tap_trx']
 
     # Buscamos el numero de conexiones a tierra que no se deben ser más que el númeto total de barras.
-    Bus_i_lineas.extend(Barra_j_lineas)
-    Bus_i_lineas.extend(Bus_i_trx)
-    Bus_i_lineas.extend(Bus_j_trx)
+    Bus_i_lineas.extend(Bus_j_lineas)
+    Bus_i_lineas.extend(Bus_i_trx_tierra)
+    Bus_i_lineas.extend(Bus_j_trx_tierra)
     Bus_i_lineas.extend(Bus_i_shunt)
     
     # Agregamos las conexiones a tierra de las lineas.
@@ -105,7 +142,8 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
     B_lineas.extend(TRX_I)
     B_lineas.extend(TRX_J)
     B_lineas.extend(Y_shunt)
-    
+
+    # Comprobar si existen una conexión a tierra.    
     B2_lineas = np.array(B_lineas)
     B2_lineas = B2_lineas[B2_lineas != 0]
     
@@ -134,7 +172,6 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
 
         # Separar las listas combinadas de nuevo en Bus_i_lineas y B_lineas
         lineas, Conex = zip(*unique_combined_list)
-    
     
     # Escogemos el numero total de conexiones a tierra.
     if Conex == 0:
@@ -250,9 +287,9 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
         MatrizA[contador_trx, elemento - 1] = 1
         contador_trx+=1
 
-    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, Repeat, Conex_lineas, ID_lineas
+    return MatrizA, elementos_a_tierra_arr, Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, Repeat, Conex_lineas, ID_lineas, Bus_i_trx_tierra, Bus_j_trx_tierra
 
-def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, R_Shunt, X_Shunt, B_lineas, elementos_a_tierra_arr, Barra_tap, Tap_trx, Bus_i_trx, Bus_j_trx, Bus_i_shunt, Bus_i_lineas, Bus_j_lineas):
+def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra, R_Shunt, X_Shunt, B_lineas, elementos_a_tierra_arr, Barra_tap, Tap_trx, Bus_i_trx, Bus_j_trx, Bus_i_shunt, Bus_i_lineas, Bus_j_lineas, Bus_i_trx_tierra, Bus_j_trx_tierra, Barra_i_totales):
     
   # Encontramos el número de filas totales con las conexiones entre barras.
     Filas_totales = len(Y_linea)
@@ -271,10 +308,6 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
     L_Shunt = B_lineas
     Elementos_a_tierra_arr = np.array(elementos_a_tierra_arr)
 
-    # Eliminamos los TRX que no tengan conexiones a tierra.
-    Bus_i_TRX = [elemento for elemento, tap in zip(Bus_i_trx, Tap_trx) if tap != 1] 
-    Bus_j_TRX = [elemento for elemento, tap in zip(Bus_j_trx, Tap_trx) if tap != 1] 
-
     # Creamos las listas de las conexiones a tierra, primero verificamos si misma esta vacia.
     if Elementos_a_tierra_arr.size == 0:
         Conex_totales = Lineas
@@ -284,29 +317,19 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
     else:
         # --------------------- Creamos listas vacias para las conexiones a tierra. -------------------------------------
         # Una general y otra por cada tipo de elemento que tenga conexiones a tierra.
-        Conex_Tierra = np.zeros(int(Tomas_a_tierra), dtype = complex)
-        Conex_Tierra_1 = np.zeros(int(Tomas_a_tierra), dtype = complex)
-        Conex_Tierra_2 = np.zeros(int(Tomas_a_tierra), dtype = complex)
-        Conex_Tierra_3 = np.zeros(int(Tomas_a_tierra), dtype = complex)
-        Conex_Tierra_4 = np.zeros(int(Tomas_a_tierra), dtype = complex)
-        Conex_Tierra_5 = np.zeros(int(Tomas_a_tierra), dtype = complex)
+        Conex_Tierra = np.zeros(int(len(Barra_i_totales)), dtype = complex)
+        Conex_Tierra_1 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
+        Conex_Tierra_2 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
+        Conex_Tierra_3 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
+        Conex_Tierra_4 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
+        Conex_Tierra_5 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
         
     # =========================================== Conexiones a Tierra de TRX ==========================================================================================================
 
     # Bucle para sustituir los valores en i según la posición de la barra tap.
-    Bus_i_p = np.copy(Bus_i_TRX)
-    Bus_j_p = np.copy(Bus_j_TRX)
+    Bus_i_p = np.copy(Bus_i_trx_tierra)
+    Bus_j_p = np.copy(Bus_j_trx_tierra)
     
-    if Bus_i_p.size == 0:
-        pass
-    
-    else:
-        for i, tap in enumerate(Barra_tap):
-            valor_original = Bus_i_trx [i]
-            Bus_i_p[i] = tap  # Sustituir en Bus_i_p
-            if valor_original != tap:  # Solo si el valor es diferente
-                Bus_j_p[i] = valor_original  # Agregar el valor original a Bus_j_TRX en la misma posición.
-            
     # Iterar sobre Bus_i_TRX y TRX_I simultáneamente
     for i, bus_i in enumerate(Bus_i_p):
         bus_i = int(bus_i)
@@ -320,7 +343,7 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
         # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
         Conex_Tierra_2[bus_i-1] += TRX_J[i]
 
-    # ============================== Cargas a tierra de Shunt_Element ==========================================================================================================
+    # ======================================== Cargas a tierra de Shunt_Element ==========================================================================================================
     Y_cargas = np.reciprocal(Z_shunt)
 
     # Iterar sobre BUS_I y Y_cargas simultáneamente
