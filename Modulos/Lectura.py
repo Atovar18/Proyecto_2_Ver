@@ -62,8 +62,6 @@ def BUS ():
         if df.loc[i, 'Barra_i'] == df.loc[i + 1, 'Barra_i']:
             df.loc[i, 'P_gen'] += df.loc[i + 1, 'P_gen']
             df.loc[i, 'Q_gen'] += df.loc[i + 1, 'Q_gen']            
-            print ('Se cumplio en la fila:', i)
-            print ()
             df = df.drop(i + 1).reset_index(drop=True)
         else:
             i += 1

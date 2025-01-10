@@ -125,8 +125,8 @@ if GS == 'Y' or NR == 'Y' or DC == 'Y' or FD == 'Y':
 
     # Leemos los datos de nuestro master.
     # ----------------------------------------------------------------- Datos --------------------------------------------------------------------------------------
-    Lineas = pd.read_excel(ruta_archivo, sheet_name='LINES')
     Bus = pd.read_excel(ruta_archivo, sheet_name='BUS')
+    Lineas = pd.read_excel(ruta_archivo, sheet_name='LINES')
     TRX = pd.read_excel(ruta_archivo, sheet_name='TRX')
     SHUNT_ELEMENTS = pd.read_excel(ruta_archivo, sheet_name='SHUNT_ELEMENTS')
     

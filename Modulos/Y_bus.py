@@ -307,6 +307,8 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
     TRX_JI = TRX_J
     L_Shunt = B_lineas
     Elementos_a_tierra_arr = np.array(elementos_a_tierra_arr)
+    Bus_i_p = 0
+    Bus_j_p = 0
 
     # Creamos las listas de las conexiones a tierra, primero verificamos si misma esta vacia.
     if Elementos_a_tierra_arr.size == 0:
@@ -324,33 +326,33 @@ def Y_rama (Barra_i_conex, Barra_j_conex, Y_linea, TRX_I, TRX_J, Tomas_a_tierra,
         Conex_Tierra_4 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
         Conex_Tierra_5 = np.zeros(int(len(Barra_i_totales)), dtype = complex)
         
-    # =========================================== Conexiones a Tierra de TRX ==========================================================================================================
+        # =========================================== Conexiones a Tierra de TRX ==========================================================================================================
 
-    # Bucle para sustituir los valores en i según la posición de la barra tap.
-    Bus_i_p = np.copy(Bus_i_trx_tierra)
-    Bus_j_p = np.copy(Bus_j_trx_tierra)
-    
-    # Iterar sobre Bus_i_TRX y TRX_I simultáneamente
-    for i, bus_i in enumerate(Bus_i_p):
-        bus_i = int(bus_i)
-        # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
-        Conex_Tierra_1[bus_i-1] += TRX_I[i]
+        # Bucle para sustituir los valores en i según la posición de la barra tap.
+        Bus_i_p = np.copy(Bus_i_trx_tierra)
+        Bus_j_p = np.copy(Bus_j_trx_tierra)
         
+        # Iterar sobre Bus_i_TRX y TRX_I simultáneamente
+        for i, bus_i in enumerate(Bus_i_p):
+            bus_i = int(bus_i)
+            # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
+            Conex_Tierra_1[bus_i-1] += TRX_I[i]
+            
 
-    # Iterar sobre Bus_j_TRX y TRX_j simultáneamente
-    for i, bus_i in enumerate(Bus_j_p):
-        bus_i = int(bus_i)
-        # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
-        Conex_Tierra_2[bus_i-1] += TRX_J[i]
+        # Iterar sobre Bus_j_TRX y TRX_j simultáneamente
+        for i, bus_i in enumerate(Bus_j_p):
+            bus_i = int(bus_i)
+            # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
+            Conex_Tierra_2[bus_i-1] += TRX_J[i]
 
-    # ======================================== Cargas a tierra de Shunt_Element ==========================================================================================================
-    Y_cargas = np.reciprocal(Z_shunt)
+        # ======================================== Cargas a tierra de Shunt_Element ==========================================================================================================
+        Y_cargas = np.reciprocal(Z_shunt)
 
-    # Iterar sobre BUS_I y Y_cargas simultáneamente
-    for i, bus_i in enumerate(Bus_i_shunt):
-        bus_i = int(bus_i)
-        # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
-        Conex_Tierra_3[bus_i-1] += Y_cargas[i]
+        # Iterar sobre BUS_I y Y_cargas simultáneamente
+        for i, bus_i in enumerate(Bus_i_shunt):
+            bus_i = int(bus_i)
+            # Insertar el valor de TRX_I en la posición indicada por Bus_i_TRX en la lista respectiva.
+            Conex_Tierra_3[bus_i-1] += Y_cargas[i]
 
     # ========================================= Cargas a tierra de Lineas =======================================================================================================
     
