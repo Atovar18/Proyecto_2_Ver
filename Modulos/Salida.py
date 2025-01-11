@@ -10,8 +10,8 @@ def Datos (writer, Lineas, Bus, TRX, SHUNT_ELEMENTS):
     SHUNT_ELEMENTS = SHUNT_ELEMENTS[SHUNT_ELEMENTS.iloc[:, 0] != 'OFF']
     
     # Exportamos los datos al archivo Excel.
-    Lineas.to_excel(writer, sheet_name='LINES', index=False)
     Bus.to_excel(writer, sheet_name='BUS', index=False)
+    Lineas.to_excel(writer, sheet_name='LINES', index=False)
     TRX.to_excel(writer, sheet_name='TRX', index=False)
     SHUNT_ELEMENTS.to_excel(writer, sheet_name='SHUNT ELEMENTS', index=False)
     
