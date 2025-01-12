@@ -119,6 +119,15 @@ def Desacople (V_pu, Y_Bus, P_gen, P_demanda, Q_gen, Q_demanda, Bus_type, Max_it
         error_ang = max(abs(values_next_angle - v_ang))
         error = max(error_mod,error_ang)
         
+        # Convierte la variable sympy.Float a un float de Python
+        error_float = float(error)
+
+        # Coloca una condición para romper el bucle si el valor es muy grande
+        if error_float >= 1e+10:
+            print("Valor muy alto encontrado, rompiendo el bucle.")
+            break
+            # Rompe el bucle o realiza alguna acción 
+        
         # Condición de ruptura.
         if error < Convergencia:
             break
