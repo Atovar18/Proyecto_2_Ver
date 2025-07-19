@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 import itertools
 
-def Incidencia_Nodal(Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, R_lineas, X_lineas, B_lineas, R_Shunt, X_Shunt, Tap_trx, Xcc_trx, Bus_i_SHUNT, Barrai_TRX, Barraj_TRX, Barra_i):
-    # Copiamos las variables a trabajar.
-    Barras_i = Barra_i.copy()
+def Incidencia_Nodal(Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, R_Shunt, X_Shunt, Tap_trx, Xcc_trx, Bus_i_SHUNT, Indices_tap_i, Indices_tap_j, Barra_i,Bus_i_trx, Bus_j_trx, Indices_line_i, Indices_line_j):
+
+    Bus_i = Barra_i.copy()
     Lineas_Salida = Bus_i_lineas.copy()
     Lineas_Llegadas = Bus_j_lineas.copy()
     Transformadores_Salida = Bus_i_trx.copy()
@@ -18,10 +18,9 @@ def Incidencia_Nodal(Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, R_lineas,
     Tap = Tap_trx.copy()
     Reac_trx = Xcc_trx.copy()
 
-
-    # =========================================================================== Fin de la copia de las variables ==========================================================================================
-
-    # Formamos las impedancias de las lineas, shunt y transformadores.
+    # ======================================================================================================================================================================================================
+    #                                 Formamos impedancias y luego admitancias.
+    # ======================================================================================================================================================================================================
     Impedancia_lineas = np.array([complex(Resis_lineas[i], Reac_lineas[i]) for i in range(len(Resis_lineas))])
     Impedancia_shunt = np.array([complex(Resis_Shunt[i], Reac_Shunt[i]) for i in range(len(Resis_Shunt))])
     Impedancia_transformadores = np.array([complex(0, Reac_trx[i]) for i in range(len(Reac_trx))])
@@ -31,133 +30,220 @@ def Incidencia_Nodal(Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, R_lineas,
     Admitancia_shunt = np.reciprocal(Impedancia_shunt)
     Admitancia_transformadores = Tap * np.reciprocal(Impedancia_transformadores) # Admitancias de los transformadores serie, entre barras.
 
-    # ============================ Calculamos los posibles efectos a tierra de las lineas y transformadores. ==========================================================================================================
-    # -------------------------------------------------------------- Efecto de las lineas ----------------------------------------------------
-    Efecto = Suscep_lineas/2    # Efecto de las lineas.
-    Efecto = np.array([complex(0, Efecto[i]) for i in range(len(Efecto))])  # Convertimos a complejo.
-    Efecto_lineas_Barrai = Efecto.copy()  # Efecto de las barras de salida de las lineas.
-    Efecto_lineas_Barraj = Efecto.copy()  # Efecto de las barras de llegada de las lineas.
+    # ======================================================================================================================================================================================================    
+    #                                    Calculamos los posibles efectos a tierra de los elementos.      
+    # ======================================================================================================================================================================================================
+    
+    # Definimos listas de igual longitud para facilitar calculos.
+    # Encuentra la longitud máxima entre las listas
+    longitud_maxima = max(len(Suscep_lineas), len(Bus_i_SHUNT), len(Tap))
+    
+    Efecto_L_Barra_i = []
+    Efecto_L_Barra_j = []
+    Efecto_trx_Barra_i = []
+    Efecto_trx_Barra_j = []
+    
+    # Rellena las listas más cortas con ceros
+    Efecto_L_Barra_i = Efecto_L_Barra_i + [0] * (longitud_maxima - len(Efecto_L_Barra_i))
+    Efecto_L_Barra_i = Efecto_L_Barra_i + [0] * (longitud_maxima - len(Efecto_L_Barra_i))
+    Efecto_L_Barra_j = Efecto_L_Barra_j + [0] * (longitud_maxima - len(Efecto_L_Barra_j))
+    Efecto_trx_Barra_i = Efecto_trx_Barra_i + [0] * (longitud_maxima - len(Efecto_trx_Barra_i))
+    Efecto_trx_Barra_j = Efecto_trx_Barra_j + [0] * (longitud_maxima - len(Efecto_trx_Barra_j))
+    
+    
 
-    # Sumamos en paralelo las admitancias de las lineas y los efectos de las barras.
-    # Crear un DataFrame con los datos
-    df_lineas = pd.DataFrame({'Linea_Salida': Lineas_Salida, 'Linea_Llegada': Lineas_Llegadas, 'Admitancia': Admitancia_lineas, 'Efecto_Barrai': Efecto_lineas_Barrai, 'Efecto_Barraj': Efecto_lineas_Barraj})
-    # Bucle para comparar y sumar
-    i = 0
-    while i < len(df_lineas) - 1:
-        if df_lineas.loc[i, 'Linea_Salida'] == df_lineas.loc[i + 1, 'Linea_Salida'] and df_lineas.loc[i, 'Linea_Llegada'] == df_lineas.loc[i + 1, 'Linea_Llegada']:
-            df_lineas.loc[i, 'Admitancia'] += df_lineas.loc[i + 1, 'Admitancia']
-            df_lineas.loc[i, 'Efecto_Barrai'] += df_lineas.loc[i + 1, 'Efecto_Barrai']
-            df_lineas.loc[i, 'Efecto_Barraj'] += df_lineas.loc[i + 1, 'Efecto_Barraj']
-            df_lineas = df_lineas.drop(i + 1).reset_index(drop=True)
-        else:
-            i += 1   
-    # Extraer los datos actualizados
-    Lineas_Salida = df_lineas['Linea_Salida']
-    Lineas_Llegadas = df_lineas['Linea_Llegada']
-    Admitancia_lineas = df_lineas['Admitancia']
-    Efecto_lineas_Barrai = df_lineas['Efecto_Barrai']
-    Efecto_lineas_Barraj = df_lineas['Efecto_Barraj']
+    # ------------------------------------------------------------- Lineas ---------------------------------------------------------------------------------------------------------------------------------
+    Efecto_line = Suscep_lineas/2
+    Efecto_line = np.array([complex(0, Efecto_line[i]) for i in range(len(Efecto_line))])  # Convertimos a complejo.
+    Efecto_L_Barra_i = Efecto_line.copy()
+    Efecto_L_Barra_j = Efecto_line.copy()
 
-    # -------------------------------------------------------------- Efecto de los transformadores -----------------------------------------------------------------------------------------------
-    Efecto_trx_barrai = (1-Tap) * Admitancia_transformadores  # Efecto de las barras de salida de los transformadores.
-    Efecto_trx_barraj = ((Tap**2)-Tap) * Admitancia_transformadores # Efecto de las barras de llegada de los transformadores.
-    # Creamos un DataFrame para los transformadores.
-    df_transformadores = pd.DataFrame({'Transformador_Salida': Transformadores_Salida, 'Transformador_Llegada': Transformadores_Llegadas, 'Admitancia': Admitancia_transformadores, 'Efecto_Barrai': Efecto_trx_barrai, 'Efecto_Barraj': Efecto_trx_barraj, 'Indice i': Barrai_TRX, 'Indice j': Barraj_TRX})
-    # Sumamos en paralelo las admitancias de las lineas y los efectos de las barras.
-    # Bucle para comparar y sumar
-    i = 0
-    while i < len(df_transformadores) - 1:
-        if df_transformadores.loc[i, 'Transformador_Salida'] == df_transformadores.loc[i + 1, 'Transformador_Salida'] and df_transformadores.loc[i, 'Transformador_Llegada'] == df_transformadores.loc[i + 1, 'Transformador_Llegada']:
-            df_transformadores.loc[i, 'Admitancia'] += df_transformadores.loc[i + 1, 'Admitancia']
-            df_transformadores.loc[i, 'Efecto_Barrai'] += df_transformadores.loc[i + 1, 'Efecto_Barrai']
-            df_transformadores.loc[i, 'Efecto_Barraj'] += df_transformadores.loc[i + 1, 'Efecto_Barraj']
-            df_transformadores = df_transformadores.drop(i + 1).reset_index(drop=True)
-        else:
-            i += 1
+    # ------------------------------------------------------------- Transformadores --------------------------------------------------------------------------------------------------------------------------
+    Efecto_trx_Barra_i = (1-Tap)*Admitancia_transformadores
+    Efecto_trx_Barra_j = ((Tap**2)-Tap)*Admitancia_transformadores
 
-    # Extraer los datos actualizados
-    Transformadores_Salida = df_transformadores['Transformador_Salida']
-    Transformadores_Llegadas = df_transformadores['Transformador_Llegada']
-    Admitancia_transformadores = df_transformadores['Admitancia']
-    Efecto_trx_barrai = df_transformadores['Efecto_Barrai']
-    Efecto_trx_barraj = df_transformadores['Efecto_Barraj']
-    Indice_i_trx = df_transformadores['Indice i']
-    Indice_j_trx = df_transformadores['Indice j']
+    # ------------------------------------------------------------- Bshunt -----------------------------------------------------------------------------------------------------------------------------------
+    Admitancia_shunt = Admitancia_shunt
 
-    # ============================================================================================================================================================================================================================
-    #                                                  Calculaomos la incidencia nodal de barras y elementos conectados a tierra.
-    # ============================================================================================================================================================================================================================
+    # ********************************************************************************************************************************************************************************************************
+    #                                                              Definimos dimensiones de la matriz
+    # ********************************************************************************************************************************************************************************************************# Elementos a tierra: combinamos todas las listas y eliminamos duplicados
 
-    # Buscamos el total de los elementos conectados a tierra.
-    Elementos_a_tierra = []
-    Elementos_a_tierra.extend(Efecto_lineas_Barrai)
-    Elementos_a_tierra.extend(Efecto_trx_barrai)
-    Elementos_a_tierra.extend(Admitancia_shunt)
-    # Eliminamos los elementos que son 0
-    Elementos_a_tierra = [elemento for elemento in Elementos_a_tierra if elemento != 0]
-    Elementos_a_tierra = list(set(Elementos_a_tierra))
-    Elementos_a_tierra = len(Elementos_a_tierra)        # Número de elementos a tierra.
+    # Combinamos todas las listas y eliminamos duplicados.
+    indices_a_tierra = list(set(itertools.chain(Indices_line_i, Indices_line_j, Indices_tap_i, Indices_tap_j, Shunt_i)))
 
-    # Definimos las dimensiones.
-    Num_columnas = len(Barras_i)
-    Num_filas = len(Lineas_Salida) + Elementos_a_tierra
+    # Creamos la matriz base.
+    Filas = len(Bus_i) + len(indices_a_tierra)  # Numero de filas: numero de barras + numero de elementos a tierra.
+    Columnas = len(Bus_i)  # Numero de columnas: numero de barras.
+    MatrizA = np.zeros((Filas, Columnas))
 
-    # Creamos la matriz de incidencia.
-    MatrizA = np.zeros((Num_filas, Num_columnas))
+    # ======================================================================================================================================================================================================    
+    #                                    Calculamos la matriz de incidencia para las barras.      
+    # ======================================================================================================================================================================================================
 
-    # Establecemos las conexiones entre las barras.
-    Salidas = []
-    Salidas.extend(Lineas_Salida)
-    Salidas.extend(Transformadores_Salida)
-    Llegadas = []
-    Llegadas.extend(Lineas_Llegadas)
-    Llegadas.extend(Transformadores_Llegadas)
-
-
-    #Tenemos que limpiar las listas de salidas y llegadas los elementos repetidos.
-    df_Barras = pd.DataFrame({'Salida': Salidas, 'Llegada': Llegadas})
-
-    # Ordenamos la columna Bus i, por si hace falta.
-    df_Barras = df_Barras.sort_values(by=['Salida', 'Llegada'])
-    df_Barras = df_Barras.reset_index(drop=True)
+    # ----------------------------------- Salidas ----------------------------------
+    Indice_Barras_Salida = []
+    Indice_Barras_Salida.extend(Lineas_Salida)
+    Indice_Barras_Salida.extend(Transformadores_Salida)
+    # ----------------------------------- Llegadas ---------------------------------
+    Indice_Barras_Llegadas = []
+    Indice_Barras_Llegadas.extend(Lineas_Llegadas)
+    Indice_Barras_Llegadas.extend(Transformadores_Llegadas)
+    # ----------------------------------- Ordenamos --------------------------------
+    Orden = pd.DataFrame({'Salida': Indice_Barras_Salida, 'Llegada': Indice_Barras_Llegadas})
+    Orden = Orden.sort_values(by=['Salida', 'Llegada'])
+    Orden = Orden.reset_index(drop=True)
 
     # Eliminamos filas duplicadas basándonos en las columnas 'Salida' y 'Llegada'
     i = 0
-    while i < len(df_Barras) - 1:
-        if df_Barras.loc[i, 'Salida'] == df_Barras.loc[i + 1, 'Salida'] and df_Barras.loc[i, 'Llegada'] == df_Barras.loc[i + 1, 'Llegada']:
-            df_Barras = df_Barras.drop(i + 1).reset_index(drop=True)  # Elimina el elemento i+1 y reinicia los índices
+    while i < len(Orden) - 1:
+        if Orden.loc[i, 'Salida'] == Orden.loc[i + 1, 'Salida'] and Orden.loc[i, 'Llegada'] == Orden.loc[i + 1, 'Llegada']:
+            Orden = Orden.drop(i + 1).reset_index(drop=True)  # Elimina el elemento i+1 y reinicia los índices
         else:
             i += 1
-
+            
     # Extraemos las columnas Salida y Llegada.
-    Salidas = df_Barras['Salida']
-    Llegadas = df_Barras['Llegada']
+    Salidas = Orden['Salida']
+    Llegadas = Orden['Llegada']
 
     # Creamos la matriz de incidencias sobre las barras.
     for idx, (valor_i, valor_j) in enumerate(itertools.zip_longest(Salidas, Llegadas, fillvalue=None)):
         if valor_i is not None and valor_j is not None:
             
             # Realiza las operaciones necesarias con los valores
-            Barra_i = int(valor_i)
-            Barra_j = int(valor_j)
-            MatrizA[idx, Barra_i - 1] = (1)
-            MatrizA[idx, Barra_j - 1] = (-1)
+            Barras_i = int(valor_i)
+            Barras_j = int(valor_j)
+            MatrizA[idx, Barras_i - 1] = (1)
+            MatrizA[idx, Barras_j - 1] = (-1)
+
+    # ======================================================================================================================================================================================================    
+    #                                    Calculamos la matriz de incidencia para los elementos a Tierra.      
+    # ======================================================================================================================================================================================================
+
+    # Definimos un contador auxiliar.
+    Contador = len(Bus_i)  # Comenzamos desde el final de las filas de las barras.
+    for idx, valor in enumerate(indices_a_tierra):
+        if valor_i is not None and valor_j is not None:
+            MatrizA [Contador, valor - 1] = (1)
+            Contador += 1  # Incrementamos el contador para la siguiente fila de elementos a tierra.
+
+    return Admitancia_lineas, Admitancia_transformadores, Efecto_L_Barra_i, Efecto_L_Barra_j, Efecto_trx_Barra_i, Efecto_trx_Barra_j, indices_a_tierra, MatrizA, Admitancia_shunt
+
+def Y_rama (Barra_i, Bus_i_lineas, Bus_j_lineas, Admitancia_lineas, Bus_i_trx, Bus_j_trx, Admitancia_transformadores, Admitancia_shunt, Bus_i_SHUNT, indices_a_tierra, Efecto_L_Barra_i, Efecto_L_Barra_j, Efecto_trx_Barra_i, Efecto_trx_Barra_j, B_lineas):
+    import numpy as np
+    import pandas as pd
+    import itertools
+
+    # =========================================================================================================================================================================================================================
+    #                               Copiamos las variables que usaremos.
+    # =========================================================================================================================================================================================================================
+
+    Bus_i = Barra_i.copy()
+    i_lineas = Bus_i_lineas.copy()
+    j_lineas = Bus_j_lineas.copy()
+    i_trx = Bus_i_trx.copy()
+    j_trx = Bus_j_trx.copy()
+    i_shunt = Bus_i_SHUNT.copy()
+    Sucep_lineas = B_lineas.copy()  # Susceptancia de las lineas con unidades de Most (admitancias).
+
+    # ************************************************************************************************************************************************************************************************************************
+    #                                                   Comenzamos definiendo las dimensiones.
+    # *************************************************************************************************************************************************************************************************************************
+
+    Filas = len(Bus_i) + len(indices_a_tierra)  # Numero de filas: numero de barras + numero de elementos a tierra.
+    Columnas = len(Bus_i) + len(indices_a_tierra)  # Numero de columnas: numero de barras.
+    Y_rama = np.zeros((Filas, Columnas), dtype=complex)  # Matriz de admitancias de ramas.
+
+    # =======================================================================================================================================================================================================
+    #                        Seguimos llenando las posiciones correspondientes a los elementos entre barras.
+    # =======================================================================================================================================================================================================
+
+    # ---------------------- Salidas (Bus i) ----------------------
+    Salidas_rama = []
+    Salidas_rama.extend(Bus_i_lineas)
+    Salidas_rama.extend(Bus_i_trx)
+    # ---------------------- Llegadas (Bus j) ----------------------
+    Llegadas_rama = []
+    Llegadas_rama.extend(Bus_j_lineas)
+    Llegadas_rama.extend(Bus_j_trx)
+    # ---------------------- Admitancias ---------------------------
+    Admitancias_rama = []
+    Admitancias_rama.extend(Admitancia_lineas)
+    Admitancias_rama.extend(Admitancia_transformadores)
+    # ---------------------- Ordenamos -----------------------------
+    Orden_2 = pd.DataFrame ({'Salida': Salidas_rama, 'Llegada': Llegadas_rama, 'Admitancia': Admitancias_rama})
+    Orden_2 = Orden_2.sort_values(by=['Salida', 'Llegada'])
+    Orden_2 = Orden_2.reset_index(drop=True)
+
+    # ---------------------- Sumamos en paralelo -------------------
+    i = 0
+    while i < len(Orden_2) - 1:
+        if Orden_2.loc[i, 'Salida'] == Orden_2.loc[i + 1, 'Salida'] and Orden_2.loc[i, 'Llegada'] == Orden_2.loc[i + 1, 'Llegada']:
+            Orden_2.loc[i, 'Admitancia'] += Orden_2.loc[i + 1, 'Admitancia']
+            Orden_2 = Orden_2.drop(i + 1).reset_index(drop=True)  # Elimina el elemento i+1 y reinicia los índices
+        else:
+            i += 1
             
-    # Ahora agregamos las conexiones a tierra de las lineas, transformadores y shunt.
-    contador = Elementos_a_tierra
-    indice_tierra = []
-    indice_tierra.extend(Lineas_Salida)
-    indice_tierra.extend(Indice_i_trx)
-    indice_tierra.extend(Shunt_i)
-    # Eliminamos los elementos duplicados en indice_tierra
-    indice_tierra = list(set(indice_tierra))
+    # Extraemos las columnas Salida y Llegada.
+    Salidas = Orden_2['Salida']
+    Llegadas = Orden_2['Llegada']
+    Admitancias = Orden_2['Admitancia']
 
-    # Iteramos sobre los índices y valores de Elementos_a_tierras
-    #elementos_a_tierra_arr = np.array(list(Elementos_a_tierras))
-    for idx, elemento in enumerate(indice_tierra):
-        elemento = int(elemento)
-        MatrizA[contador, elemento - 1] = 1  # Usamos el valor del elemento para la columna
-        contador += 1  # Movemos el contador para la siguiente fila.
+    # Creamos la matriz de incidencias sobre las barras.
+    for idx, (valor_i, valor_j) in enumerate(itertools.zip_longest(Salidas, Llegadas, fillvalue=None)):
+        if valor_i is not None and valor_j is not None:
+            
+            # Realiza las operaciones necesarias con los valores
+            Y_rama[idx, idx] = Admitancias[idx]  # Asignamos la admitancia a la diagonal de la matriz.
+            
+    # =======================================================================================================================================================================================================
+    #                        Seguimos llenando las posiciones correspondientes a los elementos a Tierra.
+    # =======================================================================================================================================================================================================
 
+    # Definimos un contador para acceder a las filas de tierra.
+    Contador = len(Bus_i)  # Comenzamos a contar desde el final de las barras.
+
+    # --------------------------- Sumamos sobre las barras i -----------------------------------------------
+    for idx_lineas, valor_i in enumerate(i_lineas):
+        for idx_shunt, valor_j in enumerate(i_shunt):
+            if valor_i == valor_j:  # Si coinciden los valores
+                print (f'Sumando admitancia de tierra {valor_j} a la barra {valor_i}')
+                Efecto_L_Barra_i[idx_lineas-1] += Admitancia_shunt[idx_shunt]  # Sumar la admitancia correspondiente
+                break  # Salimos del bucle interno si encontramos una coincidencia
+
+    for idx_lineas, valor_j in enumerate(i_lineas):
+        for idx_trx, valor_i in enumerate(i_trx):
+            if valor_i == valor_j:  # Si coinciden los valores
+                Efecto_L_Barra_i[idx_lineas-1] += Efecto_trx_Barra_i[idx_trx]  # Sumar la admitancia correspondiente
+                break  # Salimos del bucle interno si encontramos una coincidencia
+
+    # --------------------------- Sumamos sobre las barras j -------------------------------------------------
+    for idx_lineas, valor_j in enumerate(j_lineas):
+        for idx_trx, valor_i in enumerate(j_trx):
+            if valor_i == valor_j:  # Si coinciden los valores
+                Efecto_L_Barra_j[idx_lineas-1] += Efecto_trx_Barra_j[idx_trx]  # Sumar la admitancia correspondiente
+                break  # Salimos del bucle interno si encontramos una coincidencia
+
+    # ------------------- Creamos la matriz de incidencias sobre las conex a tierra. ------------------------
+    # Sobre Bus i.
+    for idx, valor in enumerate(indices_a_tierra):
+        if valor is not None:
+            Y_rama[Contador, Contador] += Efecto_L_Barra_i [idx]  # Asignamos la admitancia a la diagonal de la matriz.
+            Contador += 1  # Incrementamos el contador para la siguiente fila de elementos a tierra. 
+            
+    Contador = len(Bus_i)  # Retomamos la cuenta desde el final de las barras.   
+
+    # Sobre Bus j.
+    for idx, valor in enumerate(indices_a_tierra):
+        if valor is not None:
+            Y_rama[Contador, Contador] += Efecto_L_Barra_j [idx]  # Asignamos la admitancia a la diagonal de la matriz.
+            Contador += 1  # Incrementamos el contador para la siguiente fila de elementos a tierra. 
+            
+    return Y_rama
+
+def Y_bus(MatrizA, Y_rama):
     
-    return MatrizA, indice_tierra, Admitancia_lineas, Admitancia_transformadores, Admitancia_shunt, Efecto_lineas_Barrai, Efecto_lineas_Barraj, Efecto_trx_barrai, Efecto_trx_barraj
+    MatrizAI =  np.transpose(MatrizA)  # Invertimos la matriz de incidencia para obtener la matriz de admitancias.
+    Y_Bus = MatrizAI @ Y_rama @ MatrizA # Calculamos la matriz de admitancias del sistema.
+    
+    return Y_Bus

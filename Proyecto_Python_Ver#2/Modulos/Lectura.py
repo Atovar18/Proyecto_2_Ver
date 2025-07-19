@@ -152,7 +152,11 @@ def LINES ():
     X_lineas = Lineas.iloc[:, 5]
     B_lineas = Lineas.iloc[:, 6]
     
-    return ID_lineas, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas
+    # Creamos una nueva variable para almacenar los índices donde Tap_trx es distinto de 1
+    Indices_line_i = Lineas.loc[Lineas['Bshunt (p.u.)'] != 0, 'Bus i'].tolist()
+    Indices_line_j = Lineas.loc[Lineas['Bshunt (p.u.)'] != 0, 'Bus j'].tolist()
+    
+    return ID_lineas, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B_lineas, Indices_line_i, Indices_line_j
     
 def TRX ():
 
@@ -186,10 +190,14 @@ def TRX ():
         Barrai_TRX[i] = tap  # Sustituir en Bus_i_p
         if valor_original != tap:  # Solo si el valor es diferente
             Barraj_TRX[i] = valor_original  # Agregar el valor original a Bus_j_TRX en la misma posición.
+            
+    # Creamos una nueva variable para almacenar los índices donde Tap_trx es distinto de 1
+    Indices_tap_i = Transformadores.loc[Transformadores['TAP'] != 1, 'Bus i'].tolist()
+    Indices_tap_j = Transformadores.loc[Transformadores['TAP'] != 1, 'Bus j'].tolist()
     
     # Actualizamos las variables Bus_i_trx y Bus_j_trx con las nuevas listas.
     
-    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Barra_tap, Barrai_TRX, Barraj_TRX
+    return ID_trx, Bus_i_trx, Bus_j_trx, Xcc_trx, Tap_trx, Barra_tap, Indices_tap_i, Indices_tap_j,Barrai_TRX, Barraj_TRX
 
 def SHUNT_ELEMENTS ():
 
