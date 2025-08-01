@@ -1,10 +1,20 @@
 from Modulos import Lectura
 from Modulos import Y_bus
+from Modulos import Gauss_Saidel
+from Modulos import Sflow
+from Modulos import Potencia
+from Modulos import Salida
 import pandas as pd
-import math
+import os
 import numpy as np
+import time
 
-# =========================================================================== Lectura de datos ==========================================================================================
+# ============================================================================= Inicio de la rutina. =======================================================================================================================================================================================================================================
+Comienzo = time.time()
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#                                                                              Extracción de los datos.                                               
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GS, NR, FD, DC, Convergencia, Max_iter = Lectura.CONFIG()  # Extraemos los datos para la configuracion.
 
@@ -32,20 +42,89 @@ Y_rama = Y_bus.Y_rama(Barra_i, Bus_i_lineas, Bus_j_lineas, Admitancia_lineas, Bu
 
 Y_Bus = Y_bus.Y_bus(MatrizA, Y_rama)  # Calculamos la matriz de admitancias del sistema.
 
-# =========================================================================== Fin del calculo de la matriz de admitancias ============================================================================================================
-# ************************************************************************************************************************************************************************************************************************
-# ************************************************************************************************************************************************************************************************************************
+# =========================================================================== Fin del calculo de la matriz de admitancias ===================================================================================================================================================
+# ***************************************************************************************************************************************************************************************************************************************************************************
+# ***************************************************************************************************************************************************************************************************************************************************************************
+# =========================================================================== Comenzamos el calculo del sistema =============================================================================================================================================================
 
 
+if GS == 'Y':
+    # --------------------------------------------------------------------------- Método Gauss Saidel ---------------------------------------------------------------------------
+    # Calculos.
+    Modulos_GS, Angulos_GS, Fasores_GS, Iteraciones_GS, Error_GS, P_demanda_GS, Q_demanda_GS= Gauss_Saidel.Gauss_Seidel(P_gen, Q_gen, P_demanda, Q_demanda, Angulos_grados, Modulo_V, Y_Bus, Bus_type, Convergencia, Max_iter, Z_zip, I_zip, P_zip)
+
+    # Flujos.
+    Salidas_GS, Llegadas_GS, ID_GS, P_perdidas_GS, Q_perdidas_GS, P_ij_GS, P_ji_GS, Q_ij_GS, Q_ji_GS = Sflow.calculo_flujos(Modulos_GS, Fasores_GS, Admitancia_lineas, Admitancia_transformadores, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Tap_trx, Efecto_L_Barra_i, Efecto_L_Barra_j, ID_lineas, ID_trx)
+
+    # Generación.
+    P_gen_GS, Q_gen_GS, Pi_GS, Qi_GS = Potencia.Potencia_Barras(Modulos_GS, Fasores_GS, Y_Bus, Bus_type, P_gen, Q_gen, P_demanda_GS, Q_demanda_GS)
 
 
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#                                                                                Escritura de resultados.                                              
+# //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+# Condición para la escritura de los resultados.
+if GS == 'Y' or DC == 'Y' or FD == 'Y':
+
+    # Crear la carpeta 'Salida' si no existe
+    output_dir = 'Salida'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Generar un nombre de archivo único
+    base_filename = 'Resultado'
+    extension = '.xlsx'
+    filename = base_filename + extension
+    counter = 1
+
+    # Asegurarse de que el nombre de archivo sea único
+    while os.path.exists(os.path.join(output_dir, filename)):
+        filename = f"{base_filename}{counter}{extension}"
+        counter += 1
+        
+    # Crear el archivo de salida en la carpeta 'Salida'
+    output_path = os.path.join(output_dir, filename)
+    writer = pd.ExcelWriter(output_path, engine='xlsxwriter')
+
+    # Leemos los datos de nuestro master.
+    # ----------------------------------------------------------------- Datos --------------------------------------------------------------------------------------
+    Bus = pd.read_excel(ruta_archivo, sheet_name='BUS')
+    Lineas = pd.read_excel(ruta_archivo, sheet_name='LINES')
+    TRX = pd.read_excel(ruta_archivo, sheet_name='TRX')
+    SHUNT_ELEMENTS = pd.read_excel(ruta_archivo, sheet_name='SHUNT_ELEMENTS')
+
+    # ----------------------------------------------------------------- Exportamos los datos al archivo Excel. --------------------------------------------------------------------------------------                                                           
+    # Llamamos la función de escritura de los datos.
+    Salida.Datos(writer, Lineas, Bus, TRX, SHUNT_ELEMENTS)
+
+    if GS == 'Y':
+        # Creamos la hoja de resultados.
+        GS_S = pd.DataFrame().to_excel(writer, sheet_name='RESULTS GS', index=False)
+        
+        # Extraemos la hoja de flujos.
+        SF_GS = pd.DataFrame().to_excel(writer, sheet_name='POWER FLOW GS', index=False)
+        
+        # Exportamos los datos de las barras.
+        Salida.Salida_GS(writer, Modulos_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda_GS, Q_demanda_GS, Error_GS, Iteraciones_GS, ID_Barras, 
+                        Pi_GS, Qi_GS)
+
+        # Exportamos los datos de los flujos.
+        Salida.Sflow_GS(writer, P_perdidas_GS, Q_perdidas_GS, P_ij_GS, P_ji_GS, Salidas_GS, Llegadas_GS, ID_GS, Q_ij_GS, Q_ji_GS)
+        # ----------------------------------------------------------------- Exportamos los datos al archivo Excel. --------------------------------------------------------------------------------------
 
 
+    # Cerramos la escritura.
+    writer.close()
+    print ()
+    print ('Calculos guardados en la carpeta "Salida", archivo:', filename)
+    print ()
 
+if GS == 'N' and NR == 'N' and DC == 'N' and FD == 'N':
+    print ('No se ha seleccionado ningún método de cálculo.')
 
-
-
-
-
-
-
+# ============================================================================= Fin de la rutina. ==========================================================================================================================================================================================================================================
+Final = time.time()
+print ()
+print ('El tiempo de ejecución es de: ', Final - Comienzo, 'segundos.')
+print ()
