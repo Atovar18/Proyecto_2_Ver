@@ -1,6 +1,6 @@
 import numpy as np
 
-def Potencia_entregada (Bus_type, Fasores_GS, Y_Bus): 
+def Potencia_entregada (Bus_type, Fasores_GS, Y_Bus, P_gen, Q_gen): 
     
     # Creamos una lista de 0's compleja para guardar los resultados.
     Potencia_S = np.zeros(len(Bus_type), complex)
@@ -39,7 +39,7 @@ def Potencia_entregada (Bus_type, Fasores_GS, Y_Bus):
             
             Total = termi3 + (termi4*Fasores_GS[i])
             # Guardamos reusltados.
-            Potencia_S [i] = Total
+            Potencia_S [i] = (P_gen[i] + 1j*Q_gen[i]) + (0 + 1j*np.imag(Total))
 
     # Aproximamos resultados para mejor interpretación. 
     Potencia_S = np.round (Potencia_S, 4)

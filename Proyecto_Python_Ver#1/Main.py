@@ -55,13 +55,13 @@ Y_Bus = Y_bus.Y_BUS (MatrizA, Y_rama)
 
 if GS == 'Y': 
     # Llamamos a la función de Gauss Saidel.
-    Modulos_GS, Angulos_GS, Fasores_GS, Iteracion_GS, Error_GS, P_return_GS, Q_return_GS = Gauus.Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter, Z_zip, I_zip, P_zip)
+    Modulos_GS, Angulos_GS, Fasores_GS, Iteracion_GS, Error_GS, P_demanda_GS, Q_demanda_GS = Gauus.Gauss_Seidel (Y_Bus, Bus_type, P_gen, Q_gen, P_demanda, Q_demanda, V_pu, V_ang, Convergencia, Max_iter, Z_zip, I_zip, P_zip)
     
     # Calculamos los flujos.
     Salida_i_GS, Salida_j_GS, ID_GS, P_loss_GS, Q_loss_GS, Pij_GS, Qij_GS, Pji_GS, Qji_GS = Sflow.Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_TRX, ID_trx, Tap_trx, Fasores_GS, Conex_lineas, SeriesTRX)
     
     # Calculamos las potencias de los generadores.   
-    P_gen_GS, Q_gen_GS = Potencia.Potencia_entregada (Bus_type, Fasores_GS, Y_Bus)
+    P_gen_GS, Q_gen_GS = Potencia.Potencia_entregada (Bus_type, Fasores_GS, Y_Bus, P_gen, Q_gen)
     
 # ============================================================================= Método de Newton Raphson. =========================================================================================================================================================================================================================================    
 
@@ -74,7 +74,7 @@ if NR == 'Y':
     Salida_i_NR, Salida_j_NR, ID_NR, P_loss_NR, Q_loss_NR, Pij_NR, Qij_NR, Pji_NR, Qji_NR = Sflow.Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_TRX, ID_trx, Tap_trx, Fasores_NR, Conex_lineas, SeriesTRX)
     
     # Calculamos las potencias de los generadores.   
-    P_gen_NR, Q_gen_NR = Potencia.Potencia_entregada (Bus_type, Fasores_NR, Y_Bus)
+    P_gen_NR, Q_gen_NR = Potencia.Potencia_entregada (Bus_type, Fasores_NR, Y_Bus, P_gen, Q_gen)
 
 # ============================================================================= Método de Newton Raphson Desacoplado Rápido. =========================================================================================================================================================================================================================================    
 
@@ -87,7 +87,7 @@ if FD == 'Y':
     Salida_i_FD, Salida_j_FD, ID_FD, P_loss_FD, Q_loss_FD, Pij_FD, Qij_FD, Pji_FD, Qji_FD = Sflow.Flujos (Bus_i_lineas, Bus_j_lineas, ID_lineas, B_lineas, Barrai_TRX, Barraj_TRX, ID_trx, Tap_trx, Fasores_FD, Conex_lineas, SeriesTRX)
     
     # Calculamos las potencias de los generadores.   
-    P_gen_FD, Q_gen_FD = Potencia.Potencia_entregada (Bus_type, Fasores_FD, Y_Bus)
+    P_gen_FD, Q_gen_FD = Potencia.Potencia_entregada (Bus_type, Fasores_FD, Y_Bus, P_gen, Q_gen)
 
 # ============================================================================= Método de Newton Lineal. =========================================================================================================================================================================================================================================        
     
@@ -109,7 +109,7 @@ if GS == 'Y' or NR == 'Y' or DC == 'Y' or FD == 'Y':
         os.makedirs(output_dir)
 
     # Generar un nombre de archivo único
-    base_filename = 'Resultado_Andrade'
+    base_filename = 'Resultado'
     extension = '.xlsx'
     filename = base_filename + extension
     counter = 1
@@ -144,7 +144,7 @@ if GS == 'Y' or NR == 'Y' or DC == 'Y' or FD == 'Y':
         
         # ----------------------------------------------------------------- Exportamos los datos al archivo Excel. --------------------------------------------------------------------------------------                                                           
         # Escribimos resultados.
-        Salida.Gauss(writer, ID_Barras, Modulos_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_return_GS, Q_return_GS, Iteracion_GS, Error_GS)
+        Salida.Gauss(writer, ID_Barras, Modulos_GS, Angulos_GS, P_gen_GS, Q_gen_GS, P_demanda_GS, Q_demanda_GS, Iteracion_GS, Error_GS)
         
         # Escribimos los flujos.
         Salida.Sflow_GS(writer, Pij_GS, Qij_GS, Pji_GS, Qji_GS, P_loss_GS, Q_loss_GS, ID_GS, Salida_i_GS, Salida_j_GS, SF_GS)
