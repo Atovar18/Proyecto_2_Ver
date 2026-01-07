@@ -13,6 +13,7 @@ def Cargas_Variables(P_demanda, Q_demanda, P_gen, Q_gen, Modulo_V, Z_zip, I_zip,
         elif Tipo_Barra[i] == 'PV':
             # Si la barra es de tipo PV, no se hace nada.
             continue
+        
         elif Tipo_Barra[i] == 'PQ':
             # Calculamos la potencia activa del modelo Zip.
             P = P_demanda[i] * (Z_zip[i] * (Modulo_Vol[i] ** 2) + I_zip[i] * Modulo_Vol[i] + P_zip[i])

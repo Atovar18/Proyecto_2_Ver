@@ -4,10 +4,14 @@ from Modulos import Gauss_Saidel
 from Modulos import Sflow
 from Modulos import Potencia
 from Modulos import Salida
+from Modulos import Newton_Rapson
+from Modulos import Carga_Zip
+
 import pandas as pd
 import os
-import numpy as np
 import time
+import sympy as sp
+import numpy as np
 
 # ============================================================================= Inicio de la rutina. =======================================================================================================================================================================================================================================
 Comienzo = time.time()
@@ -58,6 +62,19 @@ if GS == 'Y':
 
     # Generación.
     P_gen_GS, Q_gen_GS, Pi_GS, Qi_GS = Potencia.Potencia_Barras(Modulos_GS, Fasores_GS, Y_Bus, Bus_type, P_gen, Q_gen, P_demanda_GS, Q_demanda_GS)
+
+if NR == 'Y':
+    # --------------------------------------------------------------------------- Método Newton Raphson ---------------------------------------------------------------------------
+    # Calculos.
+    Modulos_NR, Angulos_NR, Fasores_NR, Iteraciones_NR, Error_NR, P_demanda_NR, Q_demanda_NR = Newton_Rapson.Newton_Raphson(P_gen, Q_gen, P_demanda, Q_demanda, Angulos_grados, Modulo_V, Y_Bus, Bus_type, Convergencia, Max_iter, Z_zip, I_zip, P_zip)
+    
+    # Flujos.
+    Salidas_NR, Llegadas_NR, ID_NR, P_perdidas_NR, Q_perdidas_NR, P_ij_NR, P_ji_NR, Q_ij_NR, Q_ji_NR = Sflow.calculo_flujos(Modulos_NR, Fasores_NR, Admitancia_lineas, Admitancia_transformadores, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Tap_trx, Efecto_L_Barra_i, Efecto_L_Barra_j, ID_lineas, ID_trx)
+    
+    # Generación.
+    P_gen_NR, Q_gen_NR, Pi_NR, Qi_NR = Potencia.Potencia_Barras(Modulos_NR, Fasores_NR, Y_Bus, Bus_type, P_gen, Q_gen, P_demanda_NR, Q_demanda_NR)
+    
+    
 
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,9 +139,11 @@ if GS == 'Y' or DC == 'Y' or FD == 'Y':
 
 if GS == 'N' and NR == 'N' and DC == 'N' and FD == 'N':
     print ('No se ha seleccionado ningún método de cálculo.')
+    print ()
 
 # ============================================================================= Fin de la rutina. ==========================================================================================================================================================================================================================================
 Final = time.time()
 print ()
 print ('El tiempo de ejecución es de: ', Final - Comienzo, 'segundos.')
 print ()
+
