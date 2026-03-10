@@ -4,7 +4,7 @@ import math
 
 # ============================================================================== Comenzamos la lectura de los datos ==========================================================================================
 # Ruta al archivo Excel
-ruta_archivo = 'Datos/data_io.xlsx'
+ruta_archivo = 'Datos/Prueba.xlsx'
 
 # Cargar el archivo Excel
 archivo_excel = pd.ExcelFile(ruta_archivo)
@@ -215,7 +215,7 @@ def SHUNT_ELEMENTS ():
 def COMPROBACION (Barra_i, Bus_i_lineas, Bus_j_lineas, Bus_i_trx, Bus_j_trx, Bus_i_shunt):
     
     # Buscamos los valores totales de las barras.
-    Max_Barra = max (Barra_i)
+    Max_Barra = len (Barra_i)
     
     # Definimos una lista con todos los valores de las conexiones.
     Valores_maximos = []
