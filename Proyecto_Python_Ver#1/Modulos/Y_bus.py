@@ -243,6 +243,15 @@ def Incidencia_Nodal (Barra_i, Bus_i_lineas, Bus_j_lineas, R_lineas, X_lineas, B
             df = df.drop(i + 1).reset_index(drop=True)
         else:
             i += 1
+
+    for i, (valori,valorj) in enumerate(df[['Barra_i_conex', 'Barra_j_conex']].values):
+        if valori > valorj:
+            
+            df.loc[i, 'Barra_i_conex'] = valorj
+            df.loc[i, 'Barra_j_conex'] = valori
+
+        else:
+            continue
             
     # Separar los datos en variables individuales 
     Barra_i_conex_n = df['Barra_i_conex'] 
